@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="随手记">
+<meta name="theme-color" content="#000000">
+<title>随手记</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000000;
+    --card: rgba(28, 28, 30, 0.8);
+    --card-solid: #1c1c1e;
+    --text: #ffffff;
+    --text-secondary: rgba(255,255,255,0.55);
+    --text-tertiary: rgba(255,255,255,0.3);
+    --accent: #0a84ff;
+    --accent-light: rgba(10,132,255,0.15);
+    --green: #30d158;
+    --orange: #ff9f0a;
+    --pink: #ff375f;
+    --purple: #bf5af2;
+    --teal: #64d2ff;
+    --border: rgba(255,255,255,0.08);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+
+  /* ---- App Shell ---- */
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding-top: calc(var(--safe-top) + 8px);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* ---- Header ---- */
+  .header {
+    padding: 16px 20px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--card);
+    border: none;
+    color: var(--accent);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    margin-right: 4px;
+  }
+  .status-dot.offline { background: var(--pink); box-shadow: 0 0 6px var(--pink); }
+
+  /* ---- Tabs ---- */
+  .tabs {
+    display: flex;
+    padding: 8px 20px;
+    gap: 0;
+    position: relative;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    transition: color 0.2s;
+  }
+  .tab.active { color: var(--text); }
+  .tab-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ---- Main Content ---- */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ---- Compose Panel ---- */
+  .compose {
+    padding: 12px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Type selector */
+  .type-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .type-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .type-chip.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .type-chip:active { transform: scale(0.95); }
+
+  /* Text area */
+  .compose-input {
+    width: 100%;
+    min-height: 160px;
+    max-height: 50vh;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .compose-input::placeholder { color: var(--text-tertiary); }
+  .compose-input:focus { border-color: rgba(10,132,255,0.4); }
+
+  /* Tags */
+  .tags-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .tags-input {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+  }
+  .tags-input::placeholder { color: var(--text-tertiary); }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .submit-btn:active { transform: scale(0.98); opacity: 0.85; }
+  .submit-btn:disabled {
+    background: rgba(10,132,255,0.3);
+    color: rgba(255,255,255,0.4);
+    cursor: not-allowed;
+  }
+
+  /* ---- Entry List ---- */
+  .entry-list {
+    padding: 8px 20px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .entry-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    transition: transform 0.15s;
+  }
+  .entry-card:active { transform: scale(0.98); }
+  .entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .entry-type-badge {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .entry-type-badge.thought { background: rgba(10,132,255,0.15); color: var(--accent); }
+  .entry-type-badge.inspiration { background: rgba(255,159,10,0.15); color: var(--orange); }
+  .entry-type-badge.todo { background: rgba(48,209,88,0.15); color: var(--green); }
+  .entry-type-badge.quote { background: rgba(191,90,242,0.15); color: var(--purple); }
+  .entry-type-badge.link { background: rgba(100,210,255,0.15); color: var(--teal); }
+
+  .entry-time {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .entry-content {
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+    word-break: break-word;
+  }
+  .entry-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .entry-tag {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 10px;
+    border-radius: 8px;
+  }
+  .entry-delete {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .entry-card:hover .entry-delete { opacity: 1; }
+
+  /* ---- Empty State ---- */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-text { font-size: 16px; line-height: 1.6; }
+
+  /* ---- Toast ---- */
+  .toast {
+    position: fixed;
+    top: calc(var(--safe-top) + 60px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--card-solid);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ---- Loading ---- */
+  .loading {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+  }
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- Counter ---- */
+  .counter {
+    padding: 4px 20px 0;
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+
+  /* ---- Responsive ---- */
+  @media (min-width: 481px) {
+    .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+  }
+
+  /* Scroll bar */
+  ::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <h1>随手记</h1>
+    <div class="header-actions">
+      <div class="status-dot" id="statusDot" title="数据库连接状态"></div>
+      <button class="icon-btn" onclick="loadEntries()" title="刷新">↻</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabBar">
+    <button class="tab active" data-tab="compose" onclick="switchTab('compose')">记录</button>
+    <button class="tab" data-tab="list" onclick="switchTab('list')">回顾</button>
+    <div class="tab-indicator" id="tabIndicator"></div>
+  </div>
+
+  <div class="content">
+    <!-- Compose View -->
+    <div class="compose" id="composeView">
+      <div class="type-row" id="typeRow">
+        <button class="type-chip active" data-type="thought" onclick="selectType('thought')">💭 想法</button>
+        <button class="type-chip" data-type="inspiration" onclick="selectType('inspiration')">⚡ 灵感</button>
+        <button class="type-chip" data-type="todo" onclick="selectType('todo')">✅ 待办</button>
+        <button class="type-chip" data-type="quote" onclick="selectType('quote')">📖 摘录</button>
+        <button class="type-chip" data-type="link" onclick="selectType('link')">🔗 链接</button>
+      </div>
+
+      <textarea
+        class="compose-input"
+        id="contentInput"
+        placeholder="此刻的想法是..."
+        autofocus
+      ></textarea>
+
+      <div class="tags-input-row">
+        <input
+          class="tags-input"
+          id="tagsInput"
+          placeholder="标签（用空格或逗号分隔）"
+        >
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitEntry()">
+        记下来
+      </button>
+    </div>
+
+    <!-- List View -->
+    <div id="listView" style="display:none;">
+      <div class="counter" id="counter"></div>
+      <div class="entry-list" id="entryList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- Supabase Config ----
+const SUPABASE_URL = 'https://dbduutzsoynmhbfazpxu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZHV1dHpzb3lubWhiZmF6cHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzU3NDIsImV4cCI6MjA4OTg1MTc0Mn0.lTrhFI7KlhbYQlvyCJ-n-MIPR9uRJ3nW44tE2CNRCW8';
+const API_BASE = `${SUPABASE_URL}/rest/v1`;
+
+const headers = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation'
+};
+
+// ---- State ----
+let currentType = 'thought';
+let entries = [];
+let isOnline = false;
+
+// ---- Tab Switching ----
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  
+  const compose = document.getElementById('composeView');
+  const list = document.getElementById('listView');
+  
+  if (tab === 'compose') {
+    compose.style.display = 'flex';
+    list.style.display = 'none';
+  } else {
+    compose.style.display = 'none';
+    list.style.display = 'block';
+    loadEntries();
+  }
+  
+  updateIndicator();
+}
+
+function updateIndicator() {
+  const activeTab = document.querySelector('.tab.active');
+  const indicator = document.getElementById('tabIndicator');
+  indicator.style.left = activeTab.offsetLeft + 'px';
+  indicator.style.width = activeTab.offsetWidth + 'px';
+}
+
+// ---- Type Selection ----
+function selectType(type) {
+  currentType = type;
+  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.type-chip[data-type="${type}"]`).classList.add('active');
+  
+  const placeholders = {
+    thought: '此刻的想法是...',
+    inspiration: '闪过的灵感...',
+    todo: '需要做的事...',
+    quote: '值得记录的话...',
+    link: '粘贴链接和备注...'
+  };
+  document.getElementById('contentInput').placeholder = placeholders[type] || '写点什么...';
+}
+
+// ---- Submit ----
+async function submitEntry() {
+  const content = document.getElementById('contentInput').value.trim();
+  if (!content) {
+    showToast('写点什么再提交');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '正在保存...';
+
+  const tagsRaw = document.getElementById('tagsInput').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(/[\s,，、]+/).filter(Boolean) : [];
+
+  // Auto-generate title from content
+  const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
+
+  const entry = {
+    title,
+    content,
+    type: currentType,
+    tags,
+    source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑'
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/entries`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(entry)
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    document.getElementById('contentInput').value = '';
+    document.getElementById('tagsInput').value = '';
+    
+    showToast('已记录 ✓');
+    
+    // Haptic feedback on iPhone
+    if (navigator.vibrate) navigator.vibrate(10);
+    
+  } catch (err) {
+    console.error('Save error:', err);
+    showToast('保存失败，请检查网络');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '记下来';
+  }
+}
+
+// ---- Load Entries ----
+async function loadEntries() {
+  const listEl = document.getElementById('entryList');
+  listEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/entries?select=*&order=created_at.desc&limit=50`,
+      { headers }
+    );
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    entries = await res.json();
+    renderEntries();
+    setOnline(true);
+  } catch (err) {
+    console.error('Load error:', err);
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-text">加载失败<br>请检查网络连接</div>
+      </div>`;
+    setOnline(false);
+  }
+}
+
+function renderEntries() {
+  const listEl = document.getElementById('entryList');
+  const counterEl = document.getElementById('counter');
+
+  if (entries.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">💡</div>
+        <div class="empty-text">还没有记录<br>去「记录」页写下第一条灵感</div>
+      </div>`;
+    counterEl.textContent = '';
+    return;
+  }
+
+  counterEl.textContent = `共 ${entries.length} 条记录`;
+
+  const typeLabels = {
+    thought: '想法',
+    inspiration: '灵感',
+    todo: '待办',
+    quote: '摘录',
+    link: '链接'
+  };
+
+  listEl.innerHTML = entries.map(e => {
+    const date = new Date(e.created_at);
+    const timeStr = formatTime(date);
+    const tagsHtml = (e.tags || []).map(t => `<span class="entry-tag">#${t}</span>`).join('');
+    
+    return `
+      <div class="entry-card" data-id="${e.id}">
+        <div class="entry-header">
+          <span class="entry-type-badge ${e.type}">${typeLabels[e.type] || e.type}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="entry-time">${timeStr}</span>
+            <button class="entry-delete" onclick="deleteEntry('${e.id}')" title="删除">×</button>
+          </div>
+        </div>
+        <div class="entry-content">${escapeHtml(e.content)}</div>
+        ${tagsHtml ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+// ---- Delete Entry ----
+async function deleteEntry(id) {
+  if (!confirm('确定删除？')) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/entries?id=eq.${id}`, {
+      method: 'DELETE',
+      headers
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    entries = entries.filter(e => e.id !== id);
+    renderEntries();
+    showToast('已删除');
+  } catch (err) {
+    showToast('删除失败');
+  }
+}
+
+// ---- Health Check ----
+async function checkHealth() {
+  try {
+    const res = await fetch(`${API_BASE}/entries?select=id&limit=1`, { headers });
+    setOnline(res.ok);
+  } catch {
+    setOnline(false);
+  }
+}
+
+function setOnline(status) {
+  isOnline = status;
+  const dot = document.getElementById('statusDot');
+  dot.className = status ? 'status-dot' : 'status-dot offline';
+  dot.title = status ? '数据库已连接' : '数据库连接失败';
+}
+
+// ---- Utils ----
+function formatTime(date) {
+  const now = new Date();
+  const diff = now - date;
+  
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return `${Math.floor(diff/60000)} 分钟前`;
+  if (diff < 86400000) return `${Math.floor(diff/3600000)} 小时前`;
+  
+  const isThisYear = date.getFullYear() === now.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  
+  if (isThisYear) return `${month}月${day}日 ${hour}:${min}`;
+  return `${date.getFullYear()}/${month}/${day}`;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ---- Keyboard shortcut: Ctrl/Cmd + Enter to submit ----
+document.getElementById('contentInput').addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    submitEntry();
+  }
+});
+
+// ---- Auto-resize textarea ----
+document.getElementById('contentInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, window.innerHeight * 0.5) + 'px';
+});
+
+// ---- Init ----
+window.addEventListener('DOMContentLoaded', () => {
+  updateIndicator();
+  checkHealth();
+});
+
+// Periodically check connection
+setInterval(checkHealth, 30000);
+</script>
+
+</body>
+</html>
