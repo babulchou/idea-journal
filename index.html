@@ -27,6 +27,7 @@
     --pink: #ff375f;
     --purple: #bf5af2;
     --teal: #64d2ff;
+    --yellow: #ffd60a;
     --border: rgba(255,255,255,0.08);
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -42,7 +43,6 @@
     overscroll-behavior: none;
   }
 
-  /* ---- App Shell ---- */
   .app {
     max-width: 480px;
     margin: 0 auto;
@@ -61,310 +61,197 @@
     justify-content: space-between;
     align-items: center;
   }
-  .header h1 {
-    font-size: 34px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-  .header-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+  .header h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
   .icon-btn {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: var(--card);
-    border: none;
-    color: var(--accent);
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: transform 0.15s;
+    width: 36px; height: 36px; border-radius: 50%; background: var(--card);
+    border: none; color: var(--accent); font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 0.15s;
   }
   .icon-btn:active { transform: scale(0.9); }
   .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-    margin-right: 4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 6px var(--green); margin-right: 4px;
   }
   .status-dot.offline { background: var(--pink); box-shadow: 0 0 6px var(--pink); }
 
   /* ---- Tabs ---- */
-  .tabs {
-    display: flex;
-    padding: 8px 20px;
-    gap: 0;
-    position: relative;
-  }
+  .tabs { display: flex; padding: 8px 20px; position: relative; }
   .tab {
-    flex: 1;
-    padding: 10px 0;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    position: relative;
-    transition: color 0.2s;
+    flex: 1; padding: 10px 0; text-align: center; font-size: 15px; font-weight: 500;
+    color: var(--text-secondary); background: none; border: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; transition: color 0.2s;
   }
   .tab.active { color: var(--text); }
   .tab-indicator {
-    position: absolute;
-    bottom: 0;
-    height: 2px;
-    background: var(--accent);
-    border-radius: 1px;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: absolute; bottom: 0; height: 2px; background: var(--accent); border-radius: 1px;
+    transition: left 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1);
   }
 
-  /* ---- Main Content ---- */
-  .content {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+  .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-  /* ---- Compose Panel ---- */
-  .compose {
-    padding: 12px 20px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  /* Type selector */
-  .type-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .type-chip {
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 14px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .type-chip.active {
-    background: var(--accent-light);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .type-chip:active { transform: scale(0.95); }
-
-  /* Text area */
+  /* ---- Compose ---- */
+  .compose { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
   .compose-input {
-    width: 100%;
-    min-height: 160px;
-    max-height: 50vh;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
-    color: var(--text);
-    font-size: 16px;
-    line-height: 1.6;
-    resize: none;
-    outline: none;
-    font-family: inherit;
-    transition: border-color 0.2s;
+    width: 100%; min-height: 180px; max-height: 50vh;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 16px; color: var(--text); font-size: 16px; line-height: 1.6;
+    resize: none; outline: none; font-family: inherit; transition: border-color 0.2s;
   }
   .compose-input::placeholder { color: var(--text-tertiary); }
   .compose-input:focus { border-color: rgba(10,132,255,0.4); }
 
-  /* Tags */
-  .tags-input-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+  .tags-input-row { display: flex; gap: 8px; align-items: center; }
   .tags-input {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    font-family: inherit;
+    flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 14px; color: var(--text); font-size: 14px; outline: none; font-family: inherit;
   }
   .tags-input::placeholder { color: var(--text-tertiary); }
 
-  /* Submit */
   .submit-btn {
-    width: 100%;
-    padding: 16px;
-    border-radius: 14px;
-    border: none;
-    background: var(--accent);
-    color: white;
-    font-size: 17px;
-    font-weight: 600;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.2s;
-    letter-spacing: 0.3px;
+    width: 100%; padding: 16px; border-radius: 14px; border: none;
+    background: var(--accent); color: white; font-size: 17px; font-weight: 600;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s; letter-spacing: 0.3px;
   }
   .submit-btn:active { transform: scale(0.98); opacity: 0.85; }
-  .submit-btn:disabled {
-    background: rgba(10,132,255,0.3);
-    color: rgba(255,255,255,0.4);
-    cursor: not-allowed;
+  .submit-btn:disabled { background: rgba(10,132,255,0.3); color: rgba(255,255,255,0.4); cursor: not-allowed; }
+
+  /* ---- Classification Modal ---- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    z-index: 900; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
+
+  .modal {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    max-width: 480px; margin: 0 auto;
+    background: var(--card-solid); border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(var(--safe-bottom) + 20px);
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .modal-overlay.show + .modal,
+  .modal.show { transform: translateY(0); }
+
+  .modal-handle {
+    width: 36px; height: 5px; border-radius: 3px;
+    background: rgba(255,255,255,0.2); margin: 0 auto 20px;
+  }
+  .modal-title {
+    font-size: 18px; font-weight: 600; margin-bottom: 6px;
+  }
+  .modal-subtitle {
+    font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;
+  }
+  .modal-preview {
+    font-size: 14px; color: var(--text-secondary); background: rgba(255,255,255,0.04);
+    border-radius: 12px; padding: 12px; margin-bottom: 20px;
+    max-height: 60px; overflow: hidden; line-height: 1.5;
   }
 
-  /* ---- Entry List ---- */
-  .entry-list {
-    padding: 8px 20px 100px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  .modal-section-label {
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
   }
+
+  .classify-grid {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px;
+  }
+  .classify-chip {
+    padding: 10px 18px; border-radius: 22px;
+    border: 1.5px solid var(--border); background: transparent;
+    color: var(--text-secondary); font-size: 14px; font-weight: 500;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s; display: flex; align-items: center; gap: 7px;
+  }
+  .classify-chip:active { transform: scale(0.95); }
+  .classify-chip.selected {
+    border-color: var(--accent); background: var(--accent-light); color: var(--accent);
+  }
+  .classify-chip.recommended::after {
+    content: '推荐'; font-size: 10px; font-weight: 600;
+    background: var(--accent); color: white; padding: 1px 6px;
+    border-radius: 6px; margin-left: 2px;
+  }
+
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-btn {
+    flex: 1; padding: 14px; border-radius: 12px; border: none;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; transition: all 0.15s;
+  }
+  .modal-btn:active { transform: scale(0.97); }
+  .modal-btn.cancel { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+  .modal-btn.confirm { background: var(--accent); color: white; }
+  .modal-btn.confirm:disabled { background: rgba(10,132,255,0.3); color: rgba(255,255,255,0.4); }
+
+  /* ---- Entry List ---- */
+  .entry-list { padding: 8px 20px 100px; display: flex; flex-direction: column; gap: 12px; }
   .entry-card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 16px;
-    border: 1px solid var(--border);
-    transition: transform 0.15s;
+    background: var(--card); border-radius: 16px; padding: 16px;
+    border: 1px solid var(--border); transition: transform 0.15s;
   }
   .entry-card:active { transform: scale(0.98); }
-  .entry-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-  }
-  .entry-type-badge {
-    font-size: 12px;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-weight: 500;
-  }
+  .entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .entry-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+  .entry-type-badge { font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 500; }
   .entry-type-badge.thought { background: rgba(10,132,255,0.15); color: var(--accent); }
   .entry-type-badge.inspiration { background: rgba(255,159,10,0.15); color: var(--orange); }
   .entry-type-badge.todo { background: rgba(48,209,88,0.15); color: var(--green); }
   .entry-type-badge.quote { background: rgba(191,90,242,0.15); color: var(--purple); }
   .entry-type-badge.link { background: rgba(100,210,255,0.15); color: var(--teal); }
+  .entry-type-badge.reflection { background: rgba(255,214,10,0.15); color: var(--yellow); }
+  .entry-type-badge.product { background: rgba(255,55,95,0.15); color: var(--pink); }
 
-  .entry-time {
-    font-size: 12px;
-    color: var(--text-tertiary);
-  }
-  .entry-content {
-    font-size: 15px;
-    line-height: 1.6;
-    color: rgba(255,255,255,0.85);
-    word-break: break-word;
-  }
-  .entry-tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-  }
-  .entry-tag {
-    font-size: 12px;
-    color: var(--text-secondary);
-    background: rgba(255,255,255,0.06);
-    padding: 2px 10px;
-    border-radius: 8px;
-  }
+  .entry-time { font-size: 12px; color: var(--text-tertiary); }
+  .entry-content { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.85); word-break: break-word; }
+  .entry-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .entry-tag { font-size: 12px; color: var(--text-secondary); background: rgba(255,255,255,0.06); padding: 2px 10px; border-radius: 8px; }
   .entry-delete {
-    background: none;
-    border: none;
-    color: var(--text-tertiary);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 4px;
-    -webkit-tap-highlight-color: transparent;
-    opacity: 0;
-    transition: opacity 0.2s;
+    background: none; border: none; color: var(--text-tertiary); font-size: 16px;
+    cursor: pointer; padding: 4px; -webkit-tap-highlight-color: transparent;
+    opacity: 0; transition: opacity 0.2s;
   }
-  .entry-card:hover .entry-delete { opacity: 1; }
+  .entry-card:hover .entry-delete,
+  .entry-card:active .entry-delete { opacity: 1; }
 
-  /* ---- Empty State ---- */
   .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 40px;
-    color: var(--text-tertiary);
-    text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 80px 40px; color: var(--text-tertiary); text-align: center;
   }
   .empty-icon { font-size: 48px; margin-bottom: 16px; }
   .empty-text { font-size: 16px; line-height: 1.6; }
 
-  /* ---- Toast ---- */
   .toast {
-    position: fixed;
-    top: calc(var(--safe-top) + 60px);
-    left: 50%;
+    position: fixed; top: calc(var(--safe-top) + 60px); left: 50%;
     transform: translateX(-50%) translateY(-20px);
-    background: var(--card-solid);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 12px 24px;
-    border-radius: 14px;
-    font-size: 15px;
-    font-weight: 500;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--card-solid); border: 1px solid var(--border); color: var(--text);
+    padding: 12px 24px; border-radius: 14px; font-size: 15px; font-weight: 500;
+    opacity: 0; pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 1100;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ---- Loading ---- */
-  .loading {
-    display: flex;
-    justify-content: center;
-    padding: 40px;
-  }
+  .loading { display: flex; justify-content: center; padding: 40px; }
   .spinner {
-    width: 24px; height: 24px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    width: 24px; height: 24px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ---- Counter ---- */
-  .counter {
-    padding: 4px 20px 0;
-    font-size: 13px;
-    color: var(--text-tertiary);
-  }
+  .counter { padding: 4px 20px 0; font-size: 13px; color: var(--text-tertiary); }
 
-  /* ---- Responsive ---- */
   @media (min-width: 481px) {
     .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
   }
-
-  /* Scroll bar */
   ::-webkit-scrollbar { width: 0; }
 </style>
 </head>
@@ -386,37 +273,14 @@
   </div>
 
   <div class="content">
-    <!-- Compose View -->
     <div class="compose" id="composeView">
-      <div class="type-row" id="typeRow">
-        <button class="type-chip active" data-type="thought" onclick="selectType('thought')">💭 想法</button>
-        <button class="type-chip" data-type="inspiration" onclick="selectType('inspiration')">⚡ 灵感</button>
-        <button class="type-chip" data-type="todo" onclick="selectType('todo')">✅ 待办</button>
-        <button class="type-chip" data-type="quote" onclick="selectType('quote')">📖 摘录</button>
-        <button class="type-chip" data-type="link" onclick="selectType('link')">🔗 链接</button>
-      </div>
-
-      <textarea
-        class="compose-input"
-        id="contentInput"
-        placeholder="此刻的想法是..."
-        autofocus
-      ></textarea>
-
+      <textarea class="compose-input" id="contentInput" placeholder="写下你此刻的想法..." autofocus></textarea>
       <div class="tags-input-row">
-        <input
-          class="tags-input"
-          id="tagsInput"
-          placeholder="标签（用空格或逗号分隔）"
-        >
+        <input class="tags-input" id="tagsInput" placeholder="标签（可选，空格或逗号分隔）">
       </div>
-
-      <button class="submit-btn" id="submitBtn" onclick="submitEntry()">
-        记下来
-      </button>
+      <button class="submit-btn" id="submitBtn" onclick="analyzeAndSubmit()">记下来</button>
     </div>
 
-    <!-- List View -->
     <div id="listView" style="display:none;">
       <div class="counter" id="counter"></div>
       <div class="entry-list" id="entryList"></div>
@@ -424,14 +288,28 @@
   </div>
 </div>
 
+<!-- Classification Confirmation Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+<div class="modal" id="classifyModal">
+  <div class="modal-handle"></div>
+  <div class="modal-title">智能分类</div>
+  <div class="modal-subtitle" id="modalSubtitle">根据内容自动推荐分类，可多选</div>
+  <div class="modal-preview" id="modalPreview"></div>
+  <div class="modal-section-label">选择分类</div>
+  <div class="classify-grid" id="classifyGrid"></div>
+  <div class="modal-actions">
+    <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+    <button class="modal-btn confirm" id="confirmBtn" onclick="confirmSave()">确认保存</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-// ---- Supabase Config ----
+// ---- Config ----
 const SUPABASE_URL = 'https://dbduutzsoynmhbfazpxu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZHV1dHpzb3lubWhiZmF6cHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzU3NDIsImV4cCI6MjA4OTg1MTc0Mn0.lTrhFI7KlhbYQlvyCJ-n-MIPR9uRJ3nW44tE2CNRCW8';
 const API_BASE = `${SUPABASE_URL}/rest/v1`;
-
 const headers = {
   'apikey': SUPABASE_KEY,
   'Authorization': `Bearer ${SUPABASE_KEY}`,
@@ -439,103 +317,220 @@ const headers = {
   'Prefer': 'return=representation'
 };
 
+// ---- All available categories ----
+const CATEGORIES = [
+  { id: 'thought',     emoji: '💭', label: '想法' },
+  { id: 'inspiration', emoji: '⚡', label: '灵感' },
+  { id: 'todo',        emoji: '✅', label: '待办' },
+  { id: 'quote',       emoji: '📖', label: '摘录' },
+  { id: 'link',        emoji: '🔗', label: '链接' },
+  { id: 'reflection',  emoji: '🪞', label: '感悟' },
+  { id: 'product',     emoji: '🧪', label: '产品' },
+];
+
+// ---- Smart Classification Rules ----
+function classifyContent(text) {
+  const t = text.toLowerCase();
+  const recommended = [];
+  const scores = {};
+
+  CATEGORIES.forEach(c => scores[c.id] = 0);
+
+  // ---- Link detection ----
+  if (/https?:\/\/|www\.|\.com|\.cn|\.io|\.org|\.net/i.test(t) || /xhslink|bilibili|zhihu|weixin|douyin/i.test(t)) {
+    scores.link += 10;
+  }
+
+  // ---- Todo detection ----
+  if (/要做|需要|待办|todo|记得|别忘|提醒|deadline|ddl|计划做|打算/i.test(t)) {
+    scores.todo += 10;
+  }
+
+  // ---- Quote detection ----
+  if (/[""「」『』]/.test(text) || /说过|名言|摘录|原文|出自|引用|——.*说/i.test(t)) {
+    scores.quote += 8;
+  }
+  if (/^["「『]/.test(text.trim())) {
+    scores.quote += 10;
+  }
+
+  // ---- Product / UX thinking ----
+  if (/产品|用户体验|ux|ui|交互|需求|功能|体验|设计|迭代|mvp|feature|痛点|场景|用户/i.test(t)) {
+    scores.product += 7;
+  }
+  if (/产品经理|pm|产品设计|用户调研|竞品/i.test(t)) {
+    scores.product += 10;
+  }
+
+  // ---- Reflection / deep thought ----
+  if (/感觉|觉得|认为|反思|本质|启发|认知|思考|感受|感悟|理解|洞察|意识到|发现了|明白了|宽容|容错/i.test(t)) {
+    scores.reflection += 7;
+  }
+  if (/人生|哲学|价值观|世界观|底层逻辑/i.test(t)) {
+    scores.reflection += 5;
+  }
+
+  // ---- Inspiration / creative spark ----
+  if (/突然|灵感|想到一个|如果能|可以做一个|idea|创意|点子|脑洞|能不能/i.test(t)) {
+    scores.inspiration += 10;
+  }
+
+  // ---- AI / Tech related -> also thought ----
+  if (/ai|人工智能|gpt|llm|agent|模型|算法|机器学习|openclaw|mcp|token|prompt/i.test(t)) {
+    scores.thought += 5;
+    if (scores.product > 0) scores.product += 3;
+    if (scores.reflection > 0) scores.reflection += 3;
+  }
+
+  // ---- General thought (baseline) ----
+  scores.thought += 3;
+
+  // Sort by score, pick top ones
+  const sorted = Object.entries(scores)
+    .filter(([_, s]) => s > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (sorted.length === 0) return ['thought'];
+
+  const topScore = sorted[0][1];
+  // Include categories with score >= 50% of top score, and score > 3 (above baseline)
+  sorted.forEach(([id, score]) => {
+    if (score >= topScore * 0.5 && score > 3) {
+      recommended.push(id);
+    }
+  });
+
+  // If nothing above threshold, at least return top 1
+  if (recommended.length === 0) {
+    recommended.push(sorted[0][0]);
+  }
+
+  // Cap at 3 recommendations
+  return recommended.slice(0, 3);
+}
+
 // ---- State ----
-let currentType = 'thought';
 let entries = [];
-let isOnline = false;
+let pendingEntry = null;
+let selectedTypes = new Set();
 
 // ---- Tab Switching ----
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
-  
-  const compose = document.getElementById('composeView');
-  const list = document.getElementById('listView');
-  
-  if (tab === 'compose') {
-    compose.style.display = 'flex';
-    list.style.display = 'none';
-  } else {
-    compose.style.display = 'none';
-    list.style.display = 'block';
-    loadEntries();
-  }
-  
+  document.getElementById('composeView').style.display = tab === 'compose' ? 'flex' : 'none';
+  document.getElementById('listView').style.display = tab === 'list' ? 'block' : 'none';
+  if (tab === 'list') loadEntries();
   updateIndicator();
 }
 
 function updateIndicator() {
-  const activeTab = document.querySelector('.tab.active');
-  const indicator = document.getElementById('tabIndicator');
-  indicator.style.left = activeTab.offsetLeft + 'px';
-  indicator.style.width = activeTab.offsetWidth + 'px';
+  const at = document.querySelector('.tab.active');
+  const ind = document.getElementById('tabIndicator');
+  ind.style.left = at.offsetLeft + 'px';
+  ind.style.width = at.offsetWidth + 'px';
 }
 
-// ---- Type Selection ----
-function selectType(type) {
-  currentType = type;
-  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.type-chip[data-type="${type}"]`).classList.add('active');
-  
-  const placeholders = {
-    thought: '此刻的想法是...',
-    inspiration: '闪过的灵感...',
-    todo: '需要做的事...',
-    quote: '值得记录的话...',
-    link: '粘贴链接和备注...'
-  };
-  document.getElementById('contentInput').placeholder = placeholders[type] || '写点什么...';
-}
-
-// ---- Submit ----
-async function submitEntry() {
+// ---- Analyze & Open Modal ----
+function analyzeAndSubmit() {
   const content = document.getElementById('contentInput').value.trim();
-  if (!content) {
-    showToast('写点什么再提交');
-    return;
-  }
+  if (!content) { showToast('写点什么再提交'); return; }
 
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '正在保存...';
+  const recommended = classifyContent(content);
+  selectedTypes = new Set(recommended);
+
+  // Build modal
+  document.getElementById('modalPreview').textContent =
+    content.length > 80 ? content.substring(0, 80) + '...' : content;
+
+  const grid = document.getElementById('classifyGrid');
+  grid.innerHTML = CATEGORIES.map(c => {
+    const isRec = recommended.includes(c.id);
+    const isSel = selectedTypes.has(c.id);
+    return `<button class="classify-chip ${isSel ? 'selected' : ''} ${isRec ? 'recommended' : ''}"
+              data-type="${c.id}" onclick="toggleType('${c.id}', this)">
+              ${c.emoji} ${c.label}
+            </button>`;
+  }).join('');
 
   const tagsRaw = document.getElementById('tagsInput').value.trim();
   const tags = tagsRaw ? tagsRaw.split(/[\s,，、]+/).filter(Boolean) : [];
-
-  // Auto-generate title from content
   const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
 
+  pendingEntry = { title, content, tags, source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑' };
+
+  // Show modal
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('classifyModal').classList.add('show');
+  updateConfirmBtn();
+}
+
+function toggleType(typeId, el) {
+  if (selectedTypes.has(typeId)) {
+    selectedTypes.delete(typeId);
+    el.classList.remove('selected');
+  } else {
+    selectedTypes.add(typeId);
+    el.classList.add('selected');
+  }
+  updateConfirmBtn();
+}
+
+function updateConfirmBtn() {
+  const btn = document.getElementById('confirmBtn');
+  const count = selectedTypes.size;
+  btn.disabled = count === 0;
+  btn.textContent = count === 0 ? '请至少选一个分类' : `确认保存（${count} 个分类）`;
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('classifyModal').classList.remove('show');
+  pendingEntry = null;
+}
+
+// ---- Confirm & Save ----
+async function confirmSave() {
+  if (!pendingEntry || selectedTypes.size === 0) return;
+
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  // Use first selected type as primary type (for DB constraint), store all in tags
+  const typesArray = Array.from(selectedTypes);
+  const primaryType = typesArray[0];
+
+  // Merge extra types into tags
+  const extraTypeTags = typesArray.slice(1).map(t => {
+    const cat = CATEGORIES.find(c => c.id === t);
+    return cat ? cat.label : t;
+  });
+  const allTags = [...pendingEntry.tags, ...extraTypeTags];
+
   const entry = {
-    title,
-    content,
-    type: currentType,
-    tags,
-    source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑'
+    ...pendingEntry,
+    type: primaryType,
+    tags: allTags,
   };
 
   try {
     const res = await fetch(`${API_BASE}/entries`, {
-      method: 'POST',
-      headers,
+      method: 'POST', headers,
       body: JSON.stringify(entry)
     });
-
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     document.getElementById('contentInput').value = '';
     document.getElementById('tagsInput').value = '';
-    
+    closeModal();
     showToast('已记录 ✓');
-    
-    // Haptic feedback on iPhone
     if (navigator.vibrate) navigator.vibrate(10);
-    
   } catch (err) {
     console.error('Save error:', err);
     showToast('保存失败，请检查网络');
-  } finally {
     btn.disabled = false;
-    btn.textContent = '记下来';
+    btn.textContent = '确认保存';
   }
 }
 
@@ -543,25 +538,14 @@ async function submitEntry() {
 async function loadEntries() {
   const listEl = document.getElementById('entryList');
   listEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
   try {
-    const res = await fetch(
-      `${API_BASE}/entries?select=*&order=created_at.desc&limit=50`,
-      { headers }
-    );
-    
+    const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=50`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
     entries = await res.json();
     renderEntries();
     setOnline(true);
   } catch (err) {
-    console.error('Load error:', err);
-    listEl.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">⚠️</div>
-        <div class="empty-text">加载失败<br>请检查网络连接</div>
-      </div>`;
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败<br>请检查网络连接</div></div>';
     setOnline(false);
   }
 }
@@ -569,138 +553,101 @@ async function loadEntries() {
 function renderEntries() {
   const listEl = document.getElementById('entryList');
   const counterEl = document.getElementById('counter');
-
   if (entries.length === 0) {
-    listEl.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">💡</div>
-        <div class="empty-text">还没有记录<br>去「记录」页写下第一条灵感</div>
-      </div>`;
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-text">还没有记录<br>去「记录」页写下第一条</div></div>';
     counterEl.textContent = '';
     return;
   }
-
   counterEl.textContent = `共 ${entries.length} 条记录`;
 
-  const typeLabels = {
-    thought: '想法',
-    inspiration: '灵感',
-    todo: '待办',
-    quote: '摘录',
-    link: '链接'
-  };
+  const typeLabels = {};
+  CATEGORIES.forEach(c => typeLabels[c.id] = c.label);
 
   listEl.innerHTML = entries.map(e => {
     const date = new Date(e.created_at);
     const timeStr = formatTime(date);
-    const tagsHtml = (e.tags || []).map(t => `<span class="entry-tag">#${t}</span>`).join('');
-    
+    // Show primary type badge + any type-tags as additional badges
+    const primaryBadge = `<span class="entry-type-badge ${e.type}">${typeLabels[e.type] || e.type}</span>`;
+    const typeLabelSet = new Set(Object.values(typeLabels));
+    const extraBadges = (e.tags || [])
+      .filter(t => typeLabelSet.has(t) && t !== typeLabels[e.type])
+      .map(t => {
+        const cat = CATEGORIES.find(c => c.label === t);
+        return cat ? `<span class="entry-type-badge ${cat.id}">${t}</span>` : '';
+      }).join('');
+    const normalTags = (e.tags || [])
+      .filter(t => !typeLabelSet.has(t))
+      .map(t => `<span class="entry-tag">#${t}</span>`).join('');
+
     return `
       <div class="entry-card" data-id="${e.id}">
         <div class="entry-header">
-          <span class="entry-type-badge ${e.type}">${typeLabels[e.type] || e.type}</span>
+          <div class="entry-badges">${primaryBadge}${extraBadges}</div>
           <div style="display:flex;align-items:center;gap:8px;">
             <span class="entry-time">${timeStr}</span>
-            <button class="entry-delete" onclick="deleteEntry('${e.id}')" title="删除">×</button>
+            <button class="entry-delete" onclick="deleteEntry('${e.id}')" title="删除">&times;</button>
           </div>
         </div>
         <div class="entry-content">${escapeHtml(e.content)}</div>
-        ${tagsHtml ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
+        ${normalTags ? `<div class="entry-tags">${normalTags}</div>` : ''}
       </div>`;
   }).join('');
 }
 
-// ---- Delete Entry ----
+// ---- Delete ----
 async function deleteEntry(id) {
   if (!confirm('确定删除？')) return;
-  
   try {
-    const res = await fetch(`${API_BASE}/entries?id=eq.${id}`, {
-      method: 'DELETE',
-      headers
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
+    await fetch(`${API_BASE}/entries?id=eq.${id}`, { method: 'DELETE', headers });
     entries = entries.filter(e => e.id !== id);
     renderEntries();
     showToast('已删除');
-  } catch (err) {
-    showToast('删除失败');
-  }
+  } catch { showToast('删除失败'); }
 }
 
-// ---- Health Check ----
+// ---- Health ----
 async function checkHealth() {
   try {
-    const res = await fetch(`${API_BASE}/entries?select=id&limit=1`, { headers });
-    setOnline(res.ok);
-  } catch {
-    setOnline(false);
-  }
+    const r = await fetch(`${API_BASE}/entries?select=id&limit=1`, { headers });
+    setOnline(r.ok);
+  } catch { setOnline(false); }
 }
-
-function setOnline(status) {
-  isOnline = status;
-  const dot = document.getElementById('statusDot');
-  dot.className = status ? 'status-dot' : 'status-dot offline';
-  dot.title = status ? '数据库已连接' : '数据库连接失败';
+function setOnline(s) {
+  const d = document.getElementById('statusDot');
+  d.className = s ? 'status-dot' : 'status-dot offline';
+  d.title = s ? '数据库已连接' : '连接失败';
 }
 
 // ---- Utils ----
 function formatTime(date) {
-  const now = new Date();
-  const diff = now - date;
-  
+  const now = new Date(), diff = now - date;
   if (diff < 60000) return '刚刚';
   if (diff < 3600000) return `${Math.floor(diff/60000)} 分钟前`;
   if (diff < 86400000) return `${Math.floor(diff/3600000)} 小时前`;
-  
-  const isThisYear = date.getFullYear() === now.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hour = String(date.getHours()).padStart(2, '0');
-  const min = String(date.getMinutes()).padStart(2, '0');
-  
-  if (isThisYear) return `${month}月${day}日 ${hour}:${min}`;
-  return `${date.getFullYear()}/${month}/${day}`;
+  const m = date.getMonth()+1, d = date.getDate();
+  const h = String(date.getHours()).padStart(2,'0'), mi = String(date.getMinutes()).padStart(2,'0');
+  if (date.getFullYear() === now.getFullYear()) return `${m}月${d}日 ${h}:${mi}`;
+  return `${date.getFullYear()}/${m}/${d}`;
 }
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function showToast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
+  el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// ---- Keyboard shortcut: Ctrl/Cmd + Enter to submit ----
-document.getElementById('contentInput').addEventListener('keydown', (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-    e.preventDefault();
-    submitEntry();
-  }
+// ---- Keyboard ----
+document.getElementById('contentInput').addEventListener('keydown', e => {
+  if ((e.metaKey||e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); analyzeAndSubmit(); }
 });
-
-// ---- Auto-resize textarea ----
 document.getElementById('contentInput').addEventListener('input', function() {
   this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, window.innerHeight * 0.5) + 'px';
+  this.style.height = Math.min(this.scrollHeight, window.innerHeight*0.5) + 'px';
 });
 
 // ---- Init ----
-window.addEventListener('DOMContentLoaded', () => {
-  updateIndicator();
-  checkHealth();
-});
-
-// Periodically check connection
+window.addEventListener('DOMContentLoaded', () => { updateIndicator(); checkHealth(); });
 setInterval(checkHealth, 30000);
 </script>
-
 </body>
 </html>
