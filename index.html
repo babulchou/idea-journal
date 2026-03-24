@@ -164,6 +164,14 @@
     display: flex; align-items: flex-start; gap: 6px; line-height: 1.5;
   }
   .insight-related-item::before { content: '·'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+  .insight-card.encouragement {
+    background: linear-gradient(135deg, rgba(48,209,88,0.06), rgba(255,214,10,0.06));
+    border-color: rgba(48,209,88,0.12);
+  }
+  .insight-card.encouragement .insight-title {
+    background: linear-gradient(135deg, var(--green), var(--yellow));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
 
   /* ---- Ask Bar (Review Page) ---- */
   .ask-bar {
@@ -570,25 +578,30 @@ async function generateInsight(newEntry) {
     }
   } catch {}
   const others = cachedEntries.filter(e => e.id !== newEntry.id);
-  if (others.length < 1) { container.innerHTML = ''; return; }
   const insight = analyzeInsight(newEntry, others);
-  if (!insight) { container.innerHTML = ''; return; }
   cachedEntries.unshift(newEntry);
   if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
   container.innerHTML = `
-    <div class="insight-card">
+    <div class="insight-card${insight.mode === 'encouragement' ? ' encouragement' : ''}">
       <div class="insight-header">
-        <span class="insight-icon">✨</span><span class="insight-title">灵感亮点</span>
+        <span class="insight-icon">${insight.icon}</span><span class="insight-title">${insight.title}</span>
         <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
       </div>
       <div class="insight-body">${insight.summary}</div>
-      ${insight.related.length > 0 ? `
+      ${insight.related && insight.related.length > 0 ? `
         <div class="insight-related"><div class="insight-related-label">关联记录</div>
         ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
     </div>`;
 }
 
 function analyzeInsight(newEntry, history) {
+  const tl = CATEGORIES.find(c => c.id === newEntry.type)?.label || newEntry.type;
+
+  // No history at all — first entry ever
+  if (history.length === 0) {
+    return pickEncouragement(newEntry, tl, 0);
+  }
+
   const newWords = extractKeywords(newEntry.content);
   const scored = history.map(e => {
     const eWords = extractKeywords(e.content);
@@ -598,7 +611,17 @@ function analyzeInsight(newEntry, history) {
     const tagOverlap = (e.tags || []).filter(t => newTags.has(t)).length;
     return { entry: e, score: overlap.length * 3 + sameType + tagOverlap * 2, overlapWords: overlap };
   }).filter(s => s.score > 2).sort((a, b) => b.score - a.score);
-  if (scored.length === 0) return null;
+
+  // Count same-type entries in history
+  const tc = {}; history.forEach(e => { tc[e.type] = (tc[e.type] || 0) + 1; });
+  const sameTypeCount = (tc[newEntry.type] || 0) + 1; // +1 for the new one
+
+  // No strong connections → encouragement mode
+  if (scored.length === 0) {
+    return pickEncouragement(newEntry, tl, sameTypeCount);
+  }
+
+  // Has connections → insight mode (existing logic)
   const top = scored.slice(0, 3);
   const related = top.map(s => s.entry.content.length > 50 ? s.entry.content.substring(0, 50) + '...' : s.entry.content);
   const allOW = [...new Set(top.flatMap(s => s.overlapWords))];
@@ -606,7 +629,6 @@ function analyzeInsight(newEntry, history) {
   if (allOW.length > 0) {
     const kw = allOW.slice(0, 4).map(w => `<strong>${w}</strong>`).join('、');
     const stc = top.filter(s => s.entry.type === newEntry.type).length;
-    const tl = CATEGORIES.find(c => c.id === newEntry.type)?.label || newEntry.type;
     if (top.length >= 2) {
       summary = `这条记录与你之前的 <strong>${top.length} 条想法</strong>有关联，核心关键词：${kw}。`;
       summary += stc >= 2 ? ` 你已经在「${tl}」类下积累了多条相关记录，值得持续深挖。` : ` 这些想法跨越不同分类，或许正形成更大的思考脉络。`;
@@ -616,12 +638,66 @@ function analyzeInsight(newEntry, history) {
   } else {
     summary = `你最近在相似方向上有不少思考，持续积累会带来意想不到的灵感碰撞。`;
   }
-  const tc = {}; history.forEach(e => { tc[e.type] = (tc[e.type] || 0) + 1; });
-  if (tc[newEntry.type] >= 4) {
-    const tl = CATEGORIES.find(c => c.id === newEntry.type)?.label || newEntry.type;
-    summary += ` 提示：你在「${tl}」下已有 ${tc[newEntry.type]+1} 条记录。`;
+  if (sameTypeCount >= 5) {
+    summary += ` 提示：你在「${tl}」下已有 <strong>${sameTypeCount}</strong> 条记录。`;
   }
-  return { summary, related };
+  return { mode: 'insight', icon: '✨', title: '灵感亮点', summary, related };
+}
+
+// Positive encouragement when no strong connections found
+function pickEncouragement(newEntry, typeLabel, sameTypeCount) {
+  const content = newEntry.content;
+  const len = content.length;
+
+  // Build a pool of encouragements and randomly pick one
+  const pool = [];
+
+  // Based on content length
+  if (len > 100) {
+    pool.push('这条记录很丰富，长篇思考往往能沉淀出最好的洞察。');
+    pool.push('写得挺详细的，认真记录的习惯会让你未来受益。');
+  } else if (len > 40) {
+    pool.push('不错的记录，每一条想法都是未来灵感的种子。');
+    pool.push('又多了一条，保持这个节奏，好想法会越积越多。');
+  } else {
+    pool.push('简短有力，有时候最棒的灵感就是几个字。');
+    pool.push('先记下来就对了，以后说不定会用到。');
+  }
+
+  // Based on type
+  const typeEncouragements = {
+    thought: ['每一个想法都值得被记住，继续思考。', '想法记下来才不会溜走，做得好。'],
+    inspiration: ['灵感稍纵即逝，你抓住了它。', '又一个灵感入库了，说不定哪天它就派上用场。'],
+    todo: ['记下待办是搞定事情的第一步。', '加入清单了，执行力从这里开始。'],
+    quote: ['好的摘录会在某个时刻点亮你的思路。', '收藏的好句子，未来会跟你的想法产生共鸣。'],
+    link: ['收藏了一条资源，好内容值得回头看。', '链接存好了，以后想找就能找到。'],
+    reflection: ['感悟是最珍贵的思考结晶。', '反思让人进步，这条记录很有价值。'],
+    product: ['产品嗅觉在线，保持对需求的敏感度。', '又一条产品思考，这些积累会成为你的竞争力。'],
+  };
+  const typePool = typeEncouragements[newEntry.type] || typeEncouragements.thought;
+  pool.push(...typePool);
+
+  // Based on accumulation count
+  if (sameTypeCount === 1) {
+    pool.push(`这是你的第一条「${typeLabel}」记录，一个好的开始。`);
+  } else if (sameTypeCount >= 5 && sameTypeCount < 10) {
+    pool.push(`你在「${typeLabel}」下已经积累了 <strong>${sameTypeCount}</strong> 条，量变即将产生质变。`);
+  } else if (sameTypeCount >= 10) {
+    pool.push(`「${typeLabel}」已有 <strong>${sameTypeCount}</strong> 条记录了，这已经是一个小型专题库。`);
+  }
+
+  // Time-based encouragements
+  const hour = new Date().getHours();
+  if (hour >= 0 && hour < 6) {
+    pool.push('深夜灵感往往最真实，休息好也很重要。');
+  } else if (hour >= 6 && hour < 9) {
+    pool.push('早起记录想法，今天一定会很高效。');
+  } else if (hour >= 22) {
+    pool.push('临睡前的思考往往特别清醒，记下来是对的。');
+  }
+
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+  return { mode: 'encouragement', icon: '💫', title: '已记录', summary: picked, related: [] };
 }
 
 // ================================================
