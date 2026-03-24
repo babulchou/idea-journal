@@ -805,23 +805,78 @@ const LINK_PARSER_LOCAL = 'http://localhost:8900'; // 本地调试
 
 // 存储原始输入文本（用于前端预解析 fallback）
 let _lastRawInputText = '';
+// 存储后端返回的部分数据（如 note_id）用于 fallback 增强
+let _lastApiPartialData = null;
 
 async function fetchLinkContent(url) {
+  _lastApiPartialData = null;
+
   // 1. 先尝试自建 API（服务端 httpx 抓取，支持小红书/B站/YouTube等）
   const apiResult = await fetchFromParserAPI(url);
   if (apiResult) return apiResult;
 
-  // 2. 降级：CORS proxy（对普通网页可能有效）
-  const proxyResult = await fetchFromCorsProxy(url);
-  if (proxyResult) return proxyResult;
+  // 2. 小红书专用：用后端返回的 note_id + 分享文本组合出结果
+  const isXhs = /xhslink\.com|xiaohongshu\.com|xhs\.cn/.test(url);
+  if (isXhs) {
+    const xhsResult = _buildXhsCompositeResult(url);
+    if (xhsResult) return xhsResult;
+  }
 
-  // 3. 最终降级：从分享文本中直接提取（小红书专用）
+  // 3. 降级：CORS proxy（对普通网页可能有效，小红书不用尝试了）
+  if (!isXhs) {
+    const proxyResult = await fetchFromCorsProxy(url);
+    if (proxyResult) return proxyResult;
+  }
+
+  // 4. 最终降级：从分享文本中直接提取（小红书专用）
   if (_lastRawInputText) {
     const xhsResult = parseXhsShareText(_lastRawInputText);
     if (xhsResult) return xhsResult;
   }
 
   return null;
+}
+
+// 组合 Render 返回的 note_id + 分享文本解析，构造小红书展示结果
+function _buildXhsCompositeResult(originalUrl) {
+  const noteId = _lastApiPartialData?.note_id;
+  const shareTextResult = _lastRawInputText ? parseXhsShareText(_lastRawInputText) : null;
+
+  // 至少需要 note_id 或分享文本解析结果之一
+  if (!noteId && !shareTextResult) return null;
+
+  const platform = { name: '小红书', icon: '📕' };
+  const title = shareTextResult?.title || '';
+  const author = shareTextResult?.summary?.author || '';
+
+  // 构造小红书标准链接
+  const noteUrl = noteId ? `https://www.xiaohongshu.com/explore/${noteId}` : originalUrl;
+
+  // 至少有标题或 note_id 才算有效结果
+  if (!title && !noteId) return null;
+
+  const displayTitle = title || '小红书笔记';
+  const summaryText = title
+    ? (author ? `👤 ${author}\n\n${title}` : title)
+    : (author ? `👤 ${author} 的小红书笔记` : '小红书笔记');
+
+  return {
+    title: displayTitle,
+    description: summaryText,
+    bodyText: summaryText,
+    summary: {
+      title: displayTitle,
+      platform,
+      text: summaryText,
+      keywords: [],
+      author: author,
+      extraInfo: noteId ? `🔗 笔记ID: ${noteId}` : '',
+      contentType: '',
+      noteUrl, // 方便后续使用标准链接
+    },
+    _fromShareText: true,
+    _noteId: noteId,
+  };
 }
 
 async function fetchFromParserAPI(url) {
@@ -837,7 +892,13 @@ async function fetchFromParserAPI(url) {
       clearTimeout(timeout);
       if (!res.ok) continue;
       const data = await res.json();
-      if (data.error) continue;
+      if (data.error) {
+        // 即使失败了，也保存有用的部分数据（如 note_id）
+        if (data.note_id && !_lastApiPartialData?.note_id) {
+          _lastApiPartialData = { note_id: data.note_id, platform: data.platform };
+        }
+        continue;
+      }
 
       // 检测"有结构但无实质内容"的情况（后端反爬拿到空壳数据）
       const FALLBACK_TITLES = ['小红书笔记', '未获取到标题', ''];
