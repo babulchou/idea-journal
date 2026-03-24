@@ -660,6 +660,7 @@ async function handleSubmit() {
   const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
   // Extract URLs from content
   const detectedUrls = extractUrls(content);
+  _lastRawInputText = detectedUrls.length > 0 ? content : ''; // 记录原始文本用于前端预解析
   const entry = { title, content, type: primaryType, tags: allTags, urls: detectedUrls, source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑' };
   try {
     const res = await fetch(`${API_BASE}/entries`, { method: 'POST', headers, body: JSON.stringify(entry) });
@@ -717,9 +718,68 @@ function identifyPlatform(url) {
   try { return { name: new URL(url).hostname.replace('www.', ''), icon: '🔗' }; } catch { return { name: '网页', icon: '🔗' }; }
 }
 
+// ---- 小红书分享文本预解析（前端直接提取，不依赖后端）----
+function parseXhsShareText(fullText) {
+  // 小红书分享文本常见格式:
+  // "58 花名不详🌿 发布了一篇小红书笔记，快来看吧！ 😆 xNxxxxxx 😆 http://xhslink.com/a/xxx"
+  // "22 作者名 发布了一篇小红书笔记，快来看吧！ 😆 笔记标题内容 😆 http://xhslink.com/xxx"
+  // "#标题标签# 作者名的小红书 http://xhslink.com/xxx"
+  if (!fullText || !/xhslink\.com|xiaohongshu\.com/.test(fullText)) return null;
+
+  let author = '', title = '';
+
+  // 格式1: "XX 作者名 发布了一篇小红书笔记" + "😆 标题 😆"
+  const m1 = fullText.match(/\d+\s+(.+?)\s+发布了一篇小红书笔记/);
+  if (m1) author = m1[1].trim();
+
+  // 提取 😆...😆 之间的标题
+  const m2 = fullText.match(/😆\s*(.+?)\s*😆/);
+  if (m2) title = m2[1].trim();
+
+  // 格式2: "作者名 的小红书" 或 "来自 作者名 的分享"
+  if (!author) {
+    const m3 = fullText.match(/来自\s*(.+?)\s*的(?:分享|小红书)/);
+    if (m3) author = m3[1].trim();
+  }
+
+  // 格式3: #话题标签# 作为标题线索
+  if (!title) {
+    const hashTags = fullText.match(/#([^#]+?)#/g);
+    if (hashTags && hashTags.length > 0) {
+      title = hashTags.map(t => t.replace(/#/g, '')).join(' ');
+    }
+  }
+
+  // 去除作者名前后的数字编号
+  if (author) author = author.replace(/^\d+\s*/, '').trim();
+
+  if (!author && !title) return null;
+
+  const platform = { name: '小红书', icon: '📕' };
+  const summaryText = title || `来自 ${author} 的小红书笔记`;
+  return {
+    title: title || '小红书笔记',
+    description: summaryText,
+    bodyText: summaryText,
+    summary: {
+      title: title || '小红书笔记',
+      platform,
+      text: summaryText,
+      keywords: [],
+      author: author || '',
+      extraInfo: author ? `👤 ${author}` : '',
+      contentType: '',
+    },
+    _fromShareText: true,
+  };
+}
+
 // ---- Link Parser API ----
 const LINK_PARSER_API = 'https://link-parser-api.onrender.com'; // 部署后的地址
 const LINK_PARSER_LOCAL = 'http://localhost:8900'; // 本地调试
+
+// 存储原始输入文本（用于前端预解析 fallback）
+let _lastRawInputText = '';
 
 async function fetchLinkContent(url) {
   // 1. 先尝试自建 API（服务端 httpx 抓取，支持小红书/B站/YouTube等）
@@ -729,6 +789,12 @@ async function fetchLinkContent(url) {
   // 2. 降级：CORS proxy（对普通网页可能有效）
   const proxyResult = await fetchFromCorsProxy(url);
   if (proxyResult) return proxyResult;
+
+  // 3. 最终降级：从分享文本中直接提取（小红书专用）
+  if (_lastRawInputText) {
+    const xhsResult = parseXhsShareText(_lastRawInputText);
+    if (xhsResult) return xhsResult;
+  }
 
   return null;
 }
