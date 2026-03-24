@@ -92,15 +92,46 @@
   .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
   /* ---- Compose ---- */
-  .compose { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .compose { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 14px; }
   .compose-input {
-    width: 100%; min-height: 180px; max-height: 50vh;
+    width: 100%; min-height: 140px; max-height: 40vh;
     background: var(--card); border: 1px solid var(--border); border-radius: 16px;
     padding: 16px; color: var(--text); font-size: 16px; line-height: 1.6;
     resize: none; outline: none; font-family: inherit; transition: border-color 0.2s;
   }
   .compose-input::placeholder { color: var(--text-tertiary); }
   .compose-input:focus { border-color: rgba(10,132,255,0.4); }
+
+  /* ---- Category Chips (inline) ---- */
+  .compose-section-label {
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    letter-spacing: 0.3px; display: flex; align-items: center; gap: 6px;
+  }
+  .ai-badge {
+    font-size: 10px; font-weight: 600; background: linear-gradient(135deg, #0a84ff, #bf5af2);
+    color: white; padding: 1px 7px; border-radius: 6px;
+  }
+  .compose-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .compose-chip {
+    padding: 8px 16px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: transparent;
+    color: var(--text-secondary); font-size: 14px; font-weight: 500;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    position: relative;
+  }
+  .compose-chip:active { transform: scale(0.95); }
+  .compose-chip.selected {
+    border-color: var(--accent); background: var(--accent-light); color: var(--accent);
+  }
+  .compose-chip .rec-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); display: none;
+    position: absolute; top: 4px; right: 4px;
+  }
+  .compose-chip.recommended .rec-dot { display: block; }
 
   .tags-input-row { display: flex; gap: 8px; align-items: center; }
   .tags-input {
@@ -118,78 +149,51 @@
   .submit-btn:active { transform: scale(0.98); opacity: 0.85; }
   .submit-btn:disabled { background: rgba(10,132,255,0.3); color: rgba(255,255,255,0.4); cursor: not-allowed; }
 
-  /* ---- Classification Modal ---- */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    z-index: 900; opacity: 0; pointer-events: none;
-    transition: opacity 0.25s ease;
+  /* ---- Insight Card (post-save) ---- */
+  .insight-card {
+    background: linear-gradient(135deg, rgba(10,132,255,0.08), rgba(191,90,242,0.08));
+    border: 1px solid rgba(10,132,255,0.15);
+    border-radius: 16px;
+    padding: 16px;
+    animation: insightSlideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   }
-  .modal-overlay.show { opacity: 1; pointer-events: auto; }
-
-  .modal {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    max-width: 480px; margin: 0 auto;
-    background: var(--card-solid); border-radius: 20px 20px 0 0;
-    padding: 24px 20px calc(var(--safe-bottom) + 20px);
-    z-index: 1000;
-    transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  @keyframes insightSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  .modal-overlay.show + .modal,
-  .modal.show { transform: translateY(0); }
-
-  .modal-handle {
-    width: 36px; height: 5px; border-radius: 3px;
-    background: rgba(255,255,255,0.2); margin: 0 auto 20px;
+  .insight-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
   }
-  .modal-title {
-    font-size: 18px; font-weight: 600; margin-bottom: 6px;
+  .insight-icon { font-size: 18px; }
+  .insight-title {
+    font-size: 14px; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  .modal-subtitle {
-    font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;
+  .insight-close {
+    margin-left: auto; background: none; border: none;
+    color: var(--text-tertiary); font-size: 18px; cursor: pointer;
+    padding: 2px 6px; -webkit-tap-highlight-color: transparent;
   }
-  .modal-preview {
-    font-size: 14px; color: var(--text-secondary); background: rgba(255,255,255,0.04);
-    border-radius: 12px; padding: 12px; margin-bottom: 20px;
-    max-height: 60px; overflow: hidden; line-height: 1.5;
+  .insight-body {
+    font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.75);
   }
-
-  .modal-section-label {
-    font-size: 13px; font-weight: 600; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  .insight-body strong {
+    color: var(--accent); font-weight: 600;
   }
-
-  .classify-grid {
-    display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px;
+  .insight-related {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);
   }
-  .classify-chip {
-    padding: 10px 18px; border-radius: 22px;
-    border: 1.5px solid var(--border); background: transparent;
-    color: var(--text-secondary); font-size: 14px; font-weight: 500;
-    cursor: pointer; -webkit-tap-highlight-color: transparent;
-    transition: all 0.2s; display: flex; align-items: center; gap: 7px;
+  .insight-related-label {
+    font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
   }
-  .classify-chip:active { transform: scale(0.95); }
-  .classify-chip.selected {
-    border-color: var(--accent); background: var(--accent-light); color: var(--accent);
+  .insight-related-item {
+    font-size: 13px; color: var(--text-secondary); padding: 4px 0;
+    display: flex; align-items: flex-start; gap: 6px; line-height: 1.5;
   }
-  .classify-chip.recommended::after {
-    content: '推荐'; font-size: 10px; font-weight: 600;
-    background: var(--accent); color: white; padding: 1px 6px;
-    border-radius: 6px; margin-left: 2px;
-  }
-
-  .modal-actions { display: flex; gap: 10px; }
-  .modal-btn {
-    flex: 1; padding: 14px; border-radius: 12px; border: none;
-    font-size: 16px; font-weight: 600; cursor: pointer;
-    -webkit-tap-highlight-color: transparent; transition: all 0.15s;
-  }
-  .modal-btn:active { transform: scale(0.97); }
-  .modal-btn.cancel { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
-  .modal-btn.confirm { background: var(--accent); color: white; }
-  .modal-btn.confirm:disabled { background: rgba(10,132,255,0.3); color: rgba(255,255,255,0.4); }
+  .insight-related-item::before { content: '·'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
 
   /* ---- Entry List ---- */
   .entry-list { padding: 8px 20px 100px; display: flex; flex-direction: column; gap: 12px; }
@@ -209,7 +213,7 @@
   .entry-type-badge.reflection { background: rgba(255,214,10,0.15); color: var(--yellow); }
   .entry-type-badge.product { background: rgba(255,55,95,0.15); color: var(--pink); }
 
-  .entry-time { font-size: 12px; color: var(--text-tertiary); }
+  .entry-time { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; }
   .entry-content { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.85); word-break: break-word; }
   .entry-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   .entry-tag { font-size: 12px; color: var(--text-secondary); background: rgba(255,255,255,0.06); padding: 2px 10px; border-radius: 8px; }
@@ -275,31 +279,26 @@
   <div class="content">
     <div class="compose" id="composeView">
       <textarea class="compose-input" id="contentInput" placeholder="写下你此刻的想法..." autofocus></textarea>
+
+      <div class="compose-section-label">
+        分类 <span class="ai-badge">AI 推荐</span>
+      </div>
+      <div class="compose-chips" id="composeChips"></div>
+
       <div class="tags-input-row">
         <input class="tags-input" id="tagsInput" placeholder="标签（可选，空格或逗号分隔）">
       </div>
-      <button class="submit-btn" id="submitBtn" onclick="analyzeAndSubmit()">记下来</button>
+
+      <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">记下来</button>
+
+      <!-- Insight card appears here after successful save -->
+      <div id="insightContainer"></div>
     </div>
 
     <div id="listView" style="display:none;">
       <div class="counter" id="counter"></div>
       <div class="entry-list" id="entryList"></div>
     </div>
-  </div>
-</div>
-
-<!-- Classification Confirmation Modal -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
-<div class="modal" id="classifyModal">
-  <div class="modal-handle"></div>
-  <div class="modal-title">智能分类</div>
-  <div class="modal-subtitle" id="modalSubtitle">根据内容自动推荐分类，可多选</div>
-  <div class="modal-preview" id="modalPreview"></div>
-  <div class="modal-section-label">选择分类</div>
-  <div class="classify-grid" id="classifyGrid"></div>
-  <div class="modal-actions">
-    <button class="modal-btn cancel" onclick="closeModal()">取消</button>
-    <button class="modal-btn confirm" id="confirmBtn" onclick="confirmSave()">确认保存</button>
   </div>
 </div>
 
@@ -331,88 +330,102 @@ const CATEGORIES = [
 // ---- Smart Classification Rules ----
 function classifyContent(text) {
   const t = text.toLowerCase();
-  const recommended = [];
   const scores = {};
-
   CATEGORIES.forEach(c => scores[c.id] = 0);
 
-  // ---- Link detection ----
-  if (/https?:\/\/|www\.|\.com|\.cn|\.io|\.org|\.net/i.test(t) || /xhslink|bilibili|zhihu|weixin|douyin/i.test(t)) {
-    scores.link += 10;
-  }
-
-  // ---- Todo detection ----
-  if (/要做|需要|待办|todo|记得|别忘|提醒|deadline|ddl|计划做|打算/i.test(t)) {
-    scores.todo += 10;
-  }
-
-  // ---- Quote detection ----
-  if (/[""「」『』]/.test(text) || /说过|名言|摘录|原文|出自|引用|——.*说/i.test(t)) {
-    scores.quote += 8;
-  }
-  if (/^["「『]/.test(text.trim())) {
-    scores.quote += 10;
-  }
-
-  // ---- Product / UX thinking ----
-  if (/产品|用户体验|ux|ui|交互|需求|功能|体验|设计|迭代|mvp|feature|痛点|场景|用户/i.test(t)) {
-    scores.product += 7;
-  }
-  if (/产品经理|pm|产品设计|用户调研|竞品/i.test(t)) {
-    scores.product += 10;
-  }
-
-  // ---- Reflection / deep thought ----
-  if (/感觉|觉得|认为|反思|本质|启发|认知|思考|感受|感悟|理解|洞察|意识到|发现了|明白了|宽容|容错/i.test(t)) {
-    scores.reflection += 7;
-  }
-  if (/人生|哲学|价值观|世界观|底层逻辑/i.test(t)) {
-    scores.reflection += 5;
-  }
-
-  // ---- Inspiration / creative spark ----
-  if (/突然|灵感|想到一个|如果能|可以做一个|idea|创意|点子|脑洞|能不能/i.test(t)) {
-    scores.inspiration += 10;
-  }
-
-  // ---- AI / Tech related -> also thought ----
-  if (/ai|人工智能|gpt|llm|agent|模型|算法|机器学习|openclaw|mcp|token|prompt/i.test(t)) {
+  if (/https?:\/\/|www\.|\.com|\.cn|\.io|\.org|\.net/i.test(t) || /xhslink|bilibili|zhihu|weixin|douyin/i.test(t)) scores.link += 10;
+  if (/要做|需要|待办|todo|记得|别忘|提醒|deadline|ddl|计划做|打算/i.test(t)) scores.todo += 10;
+  if (/[""「」『』]/.test(text) || /说过|名言|摘录|原文|出自|引用|——.*说/i.test(t)) scores.quote += 8;
+  if (/^["「『]/.test(text.trim())) scores.quote += 10;
+  if (/产品|用户体验|ux|ui|交互|需求|功能|体验|设计|迭代|mvp|feature|痛点|场景|用户/i.test(t)) scores.product += 7;
+  if (/产品经理|pm|产品设计|用户调研|竞品/i.test(t)) scores.product += 10;
+  if (/感觉|觉得|认为|反思|本质|启发|认知|思考|感受|感悟|理解|洞察|意识到|发现了|明白了|宽容|容错/i.test(t)) scores.reflection += 7;
+  if (/人生|哲学|价值观|世界观|底层逻辑/i.test(t)) scores.reflection += 5;
+  if (/突然|灵感|想到一个|如果能|可以做一个|idea|创意|点子|脑洞|能不能/i.test(t)) scores.inspiration += 10;
+  if (/ai|人工智能|gpt|llm|agent|模型|算法|机器学习|mcp|token|prompt/i.test(t)) {
     scores.thought += 5;
     if (scores.product > 0) scores.product += 3;
     if (scores.reflection > 0) scores.reflection += 3;
   }
-
-  // ---- General thought (baseline) ----
   scores.thought += 3;
 
-  // Sort by score, pick top ones
-  const sorted = Object.entries(scores)
-    .filter(([_, s]) => s > 0)
-    .sort((a, b) => b[1] - a[1]);
-
+  const sorted = Object.entries(scores).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]);
   if (sorted.length === 0) return ['thought'];
-
   const topScore = sorted[0][1];
-  // Include categories with score >= 50% of top score, and score > 3 (above baseline)
+  const recommended = [];
   sorted.forEach(([id, score]) => {
-    if (score >= topScore * 0.5 && score > 3) {
-      recommended.push(id);
-    }
+    if (score >= topScore * 0.5 && score > 3) recommended.push(id);
   });
-
-  // If nothing above threshold, at least return top 1
-  if (recommended.length === 0) {
-    recommended.push(sorted[0][0]);
-  }
-
-  // Cap at 3 recommendations
+  if (recommended.length === 0) recommended.push(sorted[0][0]);
   return recommended.slice(0, 3);
 }
 
 // ---- State ----
 let entries = [];
-let pendingEntry = null;
+let cachedEntries = []; // cached for insight analysis
 let selectedTypes = new Set();
+let currentRecommended = [];
+let debounceTimer = null;
+
+// ---- Render Category Chips (always visible in compose) ----
+function renderComposeChips() {
+  const grid = document.getElementById('composeChips');
+  grid.innerHTML = CATEGORIES.map(c => {
+    const isSel = selectedTypes.has(c.id);
+    const isRec = currentRecommended.includes(c.id);
+    return `<button class="compose-chip ${isSel ? 'selected' : ''} ${isRec ? 'recommended' : ''}"
+              data-type="${c.id}" onclick="toggleChip('${c.id}')">
+              ${c.emoji} ${c.label}
+              <span class="rec-dot"></span>
+            </button>`;
+  }).join('');
+}
+
+function toggleChip(typeId) {
+  if (selectedTypes.has(typeId)) {
+    selectedTypes.delete(typeId);
+  } else {
+    selectedTypes.add(typeId);
+  }
+  renderComposeChips();
+}
+
+// ---- Auto-recommend on input change ----
+function onContentChange() {
+  const text = document.getElementById('contentInput').value.trim();
+  if (text.length < 4) {
+    currentRecommended = [];
+    // Don't clear manual selections
+    renderComposeChips();
+    return;
+  }
+  const rec = classifyContent(text);
+  // Only auto-update recommended highlights, preserve manual selections
+  const prevRec = new Set(currentRecommended);
+  currentRecommended = rec;
+  // Auto-select newly recommended ones (unless user has manually deselected)
+  rec.forEach(r => {
+    if (!prevRec.has(r) && !manuallyDeselected.has(r)) {
+      selectedTypes.add(r);
+    }
+  });
+  renderComposeChips();
+}
+
+// Track what user manually deselected to not re-add
+let manuallyDeselected = new Set();
+function toggleChip(typeId) {
+  if (selectedTypes.has(typeId)) {
+    selectedTypes.delete(typeId);
+    if (currentRecommended.includes(typeId)) {
+      manuallyDeselected.add(typeId);
+    }
+  } else {
+    selectedTypes.add(typeId);
+    manuallyDeselected.delete(typeId);
+  }
+  renderComposeChips();
+}
 
 // ---- Tab Switching ----
 function switchTab(tab) {
@@ -431,87 +444,40 @@ function updateIndicator() {
   ind.style.width = at.offsetWidth + 'px';
 }
 
-// ---- Analyze & Open Modal ----
-function analyzeAndSubmit() {
+// ---- Submit ----
+async function handleSubmit() {
   const content = document.getElementById('contentInput').value.trim();
   if (!content) { showToast('写点什么再提交'); return; }
 
-  const recommended = classifyContent(content);
-  selectedTypes = new Set(recommended);
-
-  // Build modal
-  document.getElementById('modalPreview').textContent =
-    content.length > 80 ? content.substring(0, 80) + '...' : content;
-
-  const grid = document.getElementById('classifyGrid');
-  grid.innerHTML = CATEGORIES.map(c => {
-    const isRec = recommended.includes(c.id);
-    const isSel = selectedTypes.has(c.id);
-    return `<button class="classify-chip ${isSel ? 'selected' : ''} ${isRec ? 'recommended' : ''}"
-              data-type="${c.id}" onclick="toggleType('${c.id}', this)">
-              ${c.emoji} ${c.label}
-            </button>`;
-  }).join('');
-
-  const tagsRaw = document.getElementById('tagsInput').value.trim();
-  const tags = tagsRaw ? tagsRaw.split(/[\s,，、]+/).filter(Boolean) : [];
-  const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
-
-  pendingEntry = { title, content, tags, source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑' };
-
-  // Show modal
-  document.getElementById('modalOverlay').classList.add('show');
-  document.getElementById('classifyModal').classList.add('show');
-  updateConfirmBtn();
-}
-
-function toggleType(typeId, el) {
-  if (selectedTypes.has(typeId)) {
-    selectedTypes.delete(typeId);
-    el.classList.remove('selected');
-  } else {
-    selectedTypes.add(typeId);
-    el.classList.add('selected');
+  // If no type selected, auto-classify
+  if (selectedTypes.size === 0) {
+    const auto = classifyContent(content);
+    auto.forEach(t => selectedTypes.add(t));
+    renderComposeChips();
   }
-  updateConfirmBtn();
-}
 
-function updateConfirmBtn() {
-  const btn = document.getElementById('confirmBtn');
-  const count = selectedTypes.size;
-  btn.disabled = count === 0;
-  btn.textContent = count === 0 ? '请至少选一个分类' : `确认保存（${count} 个分类）`;
-}
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('show');
-  document.getElementById('classifyModal').classList.remove('show');
-  pendingEntry = null;
-}
-
-// ---- Confirm & Save ----
-async function confirmSave() {
-  if (!pendingEntry || selectedTypes.size === 0) return;
-
-  const btn = document.getElementById('confirmBtn');
+  const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = '保存中...';
 
-  // Use first selected type as primary type (for DB constraint), store all in tags
   const typesArray = Array.from(selectedTypes);
   const primaryType = typesArray[0];
-
-  // Merge extra types into tags
   const extraTypeTags = typesArray.slice(1).map(t => {
     const cat = CATEGORIES.find(c => c.id === t);
     return cat ? cat.label : t;
   });
-  const allTags = [...pendingEntry.tags, ...extraTypeTags];
+
+  const tagsRaw = document.getElementById('tagsInput').value.trim();
+  const userTags = tagsRaw ? tagsRaw.split(/[\s,，、]+/).filter(Boolean) : [];
+  const allTags = [...userTags, ...extraTypeTags];
+  const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
 
   const entry = {
-    ...pendingEntry,
+    title,
+    content,
     type: primaryType,
     tags: allTags,
+    source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑',
   };
 
   try {
@@ -520,18 +486,178 @@ async function confirmSave() {
       body: JSON.stringify(entry)
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const saved = await res.json();
 
+    // Clear form
     document.getElementById('contentInput').value = '';
+    document.getElementById('contentInput').style.height = 'auto';
     document.getElementById('tagsInput').value = '';
-    closeModal();
+    selectedTypes.clear();
+    currentRecommended = [];
+    manuallyDeselected.clear();
+    renderComposeChips();
+
+    btn.disabled = false;
+    btn.textContent = '记下来';
     showToast('已记录 ✓');
     if (navigator.vibrate) navigator.vibrate(10);
+
+    // Generate insight asynchronously
+    generateInsight(saved[0] || { ...entry, content });
   } catch (err) {
     console.error('Save error:', err);
     showToast('保存失败，请检查网络');
     btn.disabled = false;
-    btn.textContent = '确认保存';
+    btn.textContent = '记下来';
   }
+}
+
+// ---- Insight Generation ----
+async function generateInsight(newEntry) {
+  const container = document.getElementById('insightContainer');
+
+  // Fetch recent entries for context (if not cached)
+  try {
+    if (cachedEntries.length === 0) {
+      const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers });
+      if (res.ok) cachedEntries = await res.json();
+    }
+  } catch { /* ignore, just won't show insight */ }
+
+  // Exclude the just-saved entry itself
+  const otherEntries = cachedEntries.filter(e => e.id !== newEntry.id);
+  if (otherEntries.length < 1) {
+    // Not enough history, don't show insight
+    container.innerHTML = '';
+    return;
+  }
+
+  // Analyze relationships
+  const insight = analyzeInsight(newEntry, otherEntries);
+  if (!insight) {
+    container.innerHTML = '';
+    return;
+  }
+
+  // Add new entry to cached list
+  cachedEntries.unshift(newEntry);
+  if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
+
+  // Render insight card
+  container.innerHTML = `
+    <div class="insight-card">
+      <div class="insight-header">
+        <span class="insight-icon">✨</span>
+        <span class="insight-title">灵感亮点</span>
+        <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
+      </div>
+      <div class="insight-body">${insight.summary}</div>
+      ${insight.related.length > 0 ? `
+        <div class="insight-related">
+          <div class="insight-related-label">关联记录</div>
+          ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function analyzeInsight(newEntry, history) {
+  const content = newEntry.content.toLowerCase();
+  const newWords = extractKeywords(newEntry.content);
+
+  // Find related entries by keyword overlap
+  const scored = history.map(e => {
+    const eWords = extractKeywords(e.content);
+    const overlap = newWords.filter(w => eWords.includes(w));
+    // Also check type match
+    const sameType = e.type === newEntry.type ? 1 : 0;
+    // Tag overlap
+    const newTags = new Set(newEntry.tags || []);
+    const eTags = (e.tags || []);
+    const tagOverlap = eTags.filter(t => newTags.has(t)).length;
+    return {
+      entry: e,
+      score: overlap.length * 3 + sameType * 1 + tagOverlap * 2,
+      overlapWords: overlap,
+    };
+  }).filter(s => s.score > 2).sort((a, b) => b.score - a.score);
+
+  if (scored.length === 0) return null;
+
+  const topRelated = scored.slice(0, 3);
+  const relatedTexts = topRelated.map(s => {
+    const preview = s.entry.content.length > 50 ? s.entry.content.substring(0, 50) + '...' : s.entry.content;
+    return preview;
+  });
+
+  // Build summary
+  let summary = '';
+  const allOverlapWords = [...new Set(topRelated.flatMap(s => s.overlapWords))];
+
+  if (allOverlapWords.length > 0) {
+    const keywordHighlight = allOverlapWords.slice(0, 4).map(w => `<strong>${w}</strong>`).join('、');
+    
+    // Check for patterns
+    const sameTypeCount = topRelated.filter(s => s.entry.type === newEntry.type).length;
+    const typeLabel = CATEGORIES.find(c => c.id === newEntry.type)?.label || newEntry.type;
+
+    if (topRelated.length >= 2) {
+      summary = `这条记录与你之前的 <strong>${topRelated.length} 条想法</strong>有关联，核心关键词：${keywordHighlight}。`;
+      if (sameTypeCount >= 2) {
+        summary += ` 你已经在「${typeLabel}」类下积累了多条相关记录，这个方向值得持续深挖。`;
+      } else {
+        summary += ` 这些想法跨越了不同分类，或许正在形成一个更大的思考脉络。`;
+      }
+    } else {
+      summary = `这条记录与一条历史想法产生了共鸣，关键词：${keywordHighlight}。持续记录，连点成线。`;
+    }
+  } else {
+    // Related by type/tags but no keyword overlap
+    summary = `你最近在相似方向上有不少思考，持续积累会带来意想不到的灵感碰撞。`;
+  }
+
+  // Check for emerging theme
+  const typeCounts = {};
+  history.forEach(e => { typeCounts[e.type] = (typeCounts[e.type] || 0) + 1; });
+  const nt = newEntry.type;
+  if (typeCounts[nt] && typeCounts[nt] >= 4) {
+    const typeLabel = CATEGORIES.find(c => c.id === nt)?.label || nt;
+    summary += ` 提示：你在「${typeLabel}」类别下已有 ${typeCounts[nt]+1} 条记录，这是你活跃的思考领域。`;
+  }
+
+  return {
+    summary,
+    related: relatedTexts,
+  };
+}
+
+function extractKeywords(text) {
+  // Simple Chinese + English keyword extraction
+  // Remove common stop words, extract meaningful segments
+  const cleaned = text
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/[^\u4e00-\u9fff\w]+/g, ' ')
+    .toLowerCase();
+
+  // For Chinese: extract 2-4 char segments that appear meaningful
+  const chineseMatches = text.match(/[\u4e00-\u9fff]{2,6}/g) || [];
+  // For English: extract words > 2 chars
+  const englishMatches = cleaned.match(/[a-z]{3,}/g) || [];
+
+  // Filter out common stop words
+  const stopWords = new Set([
+    '的', '了', '是', '在', '我', '有', '和', '就', '不', '人', '都', '一', '一个',
+    '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好',
+    '这', '他', '她', '它', '们', '那', '个', '来', '但', '而', '与', '或', '等',
+    '这个', '那个', '什么', '怎么', '可以', '因为', '所以', '如果', '虽然', '但是',
+    'the', 'and', 'for', 'that', 'this', 'with', 'are', 'was', 'not', 'but', 'have',
+    'from', 'they', 'been', 'has', 'its', 'will', 'can', 'would', 'could', 'should',
+  ]);
+
+  const keywords = [...chineseMatches, ...englishMatches].filter(w => !stopWords.has(w));
+  // Deduplicate
+  return [...new Set(keywords)];
 }
 
 // ---- Load Entries ----
@@ -542,6 +668,7 @@ async function loadEntries() {
     const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=50`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     entries = await res.json();
+    cachedEntries = entries.slice(0, 30); // update cache
     renderEntries();
     setOnline(true);
   } catch (err) {
@@ -566,7 +693,6 @@ function renderEntries() {
   listEl.innerHTML = entries.map(e => {
     const date = new Date(e.created_at);
     const timeStr = formatTime(date);
-    // Show primary type badge + any type-tags as additional badges
     const primaryBadge = `<span class="entry-type-badge ${e.type}">${typeLabels[e.type] || e.type}</span>`;
     const typeLabelSet = new Set(Object.values(typeLabels));
     const extraBadges = (e.tags || [])
@@ -600,6 +726,7 @@ async function deleteEntry(id) {
   try {
     await fetch(`${API_BASE}/entries?id=eq.${id}`, { method: 'DELETE', headers });
     entries = entries.filter(e => e.id !== id);
+    cachedEntries = cachedEntries.filter(e => e.id !== id);
     renderEntries();
     showToast('已删除');
   } catch { showToast('删除失败'); }
@@ -636,17 +763,30 @@ function showToast(msg) {
   setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// ---- Keyboard ----
-document.getElementById('contentInput').addEventListener('keydown', e => {
-  if ((e.metaKey||e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); analyzeAndSubmit(); }
+// ---- Input Events ----
+const contentInput = document.getElementById('contentInput');
+contentInput.addEventListener('keydown', e => {
+  if ((e.metaKey||e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleSubmit(); }
 });
-document.getElementById('contentInput').addEventListener('input', function() {
+contentInput.addEventListener('input', function() {
   this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, window.innerHeight*0.5) + 'px';
+  this.style.height = Math.min(this.scrollHeight, window.innerHeight*0.4) + 'px';
+  // Debounce AI classification
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(onContentChange, 400);
 });
 
 // ---- Init ----
-window.addEventListener('DOMContentLoaded', () => { updateIndicator(); checkHealth(); });
+window.addEventListener('DOMContentLoaded', () => {
+  renderComposeChips();
+  updateIndicator();
+  checkHealth();
+  // Pre-load entries for insight analysis
+  fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers })
+    .then(r => r.ok ? r.json() : [])
+    .then(data => { cachedEntries = data; })
+    .catch(() => {});
+});
 setInterval(checkHealth, 30000);
 </script>
 </body>
