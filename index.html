@@ -373,7 +373,65 @@
   }
   .link-summary-loading .spinner { width: 16px; height: 16px; border-width: 1.5px; }
 
-  /* Insight card link summary section */
+  /* ---- Link Reading Progress ---- */
+  .link-reading-card {
+    border-color: rgba(100,210,255,0.2) !important;
+    background: linear-gradient(135deg, rgba(100,210,255,0.06), rgba(10,132,255,0.06)) !important;
+  }
+  .link-reading-progress {
+    padding: 4px 0 2px;
+  }
+  .link-reading-bar {
+    height: 3px; border-radius: 2px; background: rgba(100,210,255,0.1);
+    overflow: hidden; margin-bottom: 10px;
+  }
+  .link-reading-fill {
+    height: 100%; width: 30%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--teal), var(--accent));
+    animation: readingProgress 2.5s ease-in-out infinite;
+  }
+  @keyframes readingProgress {
+    0% { width: 5%; margin-left: 0; }
+    50% { width: 60%; margin-left: 20%; }
+    100% { width: 5%; margin-left: 95%; }
+  }
+  .link-reading-hint {
+    font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+  }
+
+  /* ---- Link Result Card (main feedback) ---- */
+  .link-result-card {
+    border-color: rgba(100,210,255,0.2) !important;
+    background: linear-gradient(135deg, rgba(100,210,255,0.06), rgba(10,132,255,0.06)) !important;
+  }
+  .link-result-main {
+    padding: 2px 0 4px;
+  }
+  .link-result-title {
+    font-size: 16px; font-weight: 700; color: var(--text);
+    line-height: 1.5; margin-bottom: 6px;
+  }
+  .link-result-meta {
+    font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px;
+    line-height: 1.5;
+  }
+  .link-result-summary {
+    font-size: 14px; line-height: 1.75; color: rgba(255,255,255,0.78);
+    margin-top: 8px; white-space: pre-wrap;
+  }
+  .link-result-keywords {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+  }
+  .link-kw-tag {
+    font-size: 12px; padding: 3px 10px; border-radius: 10px;
+    background: rgba(100,210,255,0.1); color: var(--teal); font-weight: 500;
+  }
+  .link-result-related {
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Insight card link summary section (review page) */
   .insight-link-summary {
     margin-top: 10px; padding-top: 10px;
     border-top: 1px solid rgba(255,255,255,0.06);
@@ -613,13 +671,14 @@ async function handleSubmit() {
     selectedTypes.clear(); currentRecommended = []; manuallyDeselected.clear();
     renderComposeChips();
     btn.disabled = false; btn.textContent = '记下来';
-    showToast('已记录 ✓');
     if (navigator.vibrate) navigator.vibrate(10);
     const savedEntry = saved[0] || { ...entry, content };
-    // If URL detected, fetch summary in parallel with insight
+    // If URL detected — main feedback is link content reading
     if (detectedUrls.length > 0) {
+      showToast('已保存，正在读取链接内容...');
       generateInsightWithLink(savedEntry, detectedUrls[0]);
     } else {
+      showToast('已记录 ✓');
       generateInsight(savedEntry);
     }
   } catch (err) {
@@ -780,24 +839,25 @@ function parseHtmlContent(html, url) {
 // ---- Insight with Link Summary ----
 async function generateInsightWithLink(savedEntry, url) {
   const container = document.getElementById('insightContainer');
-
-  // Show loading state immediately
   const platform = identifyPlatform(url);
+
+  // Show loading state — clearly tell user we're reading the link
   container.innerHTML = `
-    <div class="insight-card" style="border-color: rgba(100,210,255,0.15); background: linear-gradient(135deg, rgba(100,210,255,0.06), rgba(10,132,255,0.06));">
+    <div class="insight-card link-reading-card">
       <div class="insight-header">
-        <span class="insight-icon">🔗</span><span class="insight-title">正在读取链接内容...</span>
+        <span class="insight-icon">${platform.icon}</span>
+        <span class="insight-title">正在为你读取内容...</span>
       </div>
-      <div class="link-summary-loading">
-        <div class="spinner"></div>
-        <span>正在获取${platform.name}页面内容...</span>
+      <div class="link-reading-progress">
+        <div class="link-reading-bar"><div class="link-reading-fill"></div></div>
+        <span class="link-reading-hint">正在访问${platform.name}并解析页面内容</span>
       </div>
     </div>`;
 
-  // Fetch link content
+  // Fetch link content — this is the main event
   const linkData = await fetchLinkContent(url);
 
-  // Now generate the regular insight
+  // Load history for insight (secondary, in background)
   try {
     if (cachedEntries.length === 0) {
       const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers });
@@ -809,48 +869,63 @@ async function generateInsightWithLink(savedEntry, url) {
   cachedEntries.unshift(savedEntry);
   if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
 
-  // Build the combined card
-  let linkHtml = '';
-  if (linkData && linkData.summary) {
-    const s = linkData.summary;
-    linkHtml = `
-      <div class="insight-link-summary">
-        <div class="ils-label">${s.platform.icon} ${s.platform.name}内容摘要</div>
-        ${s.title ? `<div class="ils-title">${escapeHtml(s.title)}</div>` : ''}
-        ${s.extraInfo ? `<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">${escapeHtml(s.extraInfo)}</div>` : ''}
-        ${s.author && !s.extraInfo ? `<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">👤 ${escapeHtml(s.author)}</div>` : ''}
-        <div class="ils-text">${escapeHtml(s.text)}</div>
-        ${s.keywords && s.keywords.length > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--text-tertiary);">关键词：${s.keywords.map(k=>'<strong style="color:var(--teal);">'+escapeHtml(k)+'</strong>').join('、')}</div>` : ''}
-      </div>`;
+  // ========== BUILD RESULT CARD ==========
 
-    // Store summary to database asynchronously
+  if (linkData && linkData.summary) {
+    // SUCCESS: Link content is the MAIN feedback
+    const s = linkData.summary;
+    const displayPlatform = s.platform || platform;
+
+    // Save to DB asynchronously
     saveLinkSummary(savedEntry.id, {
-      url, title: s.title, platform: s.platform.name, text: s.text,
+      url, title: s.title, platform: displayPlatform.name, text: s.text,
       keywords: s.keywords || [], author: s.author || '', extra_info: s.extraInfo || '',
     });
+
+    // Build the primary content card — link summary IS the feedback
+    container.innerHTML = `
+      <div class="insight-card link-result-card">
+        <div class="insight-header">
+          <span class="insight-icon">${displayPlatform.icon}</span>
+          <span class="insight-title">已读取 · ${escapeHtml(displayPlatform.name)}</span>
+          <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
+        </div>
+
+        <div class="link-result-main">
+          ${s.title ? `<div class="link-result-title">${escapeHtml(s.title)}</div>` : ''}
+          ${s.author ? `<div class="link-result-meta">👤 ${escapeHtml(s.author)}</div>` : ''}
+          ${s.extraInfo ? `<div class="link-result-meta">${escapeHtml(s.extraInfo)}</div>` : ''}
+          <div class="link-result-summary">${escapeHtml(s.text)}</div>
+          ${s.keywords && s.keywords.length > 0 ? `
+            <div class="link-result-keywords">
+              ${s.keywords.map(k => `<span class="link-kw-tag">${escapeHtml(k)}</span>`).join('')}
+            </div>` : ''}
+        </div>
+
+        ${insight.related && insight.related.length > 0 ? `
+          <div class="link-result-related">
+            <div class="insight-related-label">你的想法库中有相关记录</div>
+            ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}
+          </div>` : ''}
+      </div>`;
   } else {
-    linkHtml = `
-      <div class="insight-link-summary">
-        <div class="ils-label">${platform.icon} ${platform.name}</div>
-        <div class="ils-text" style="color:var(--text-tertiary);">暂时无法获取该页面内容，链接已保存。</div>
+    // FAILED: Fall back to encouragement + explain link is saved
+    container.innerHTML = `
+      <div class="insight-card${insight.mode === 'encouragement' ? ' encouragement' : ''}">
+        <div class="insight-header">
+          <span class="insight-icon">${platform.icon}</span>
+          <span class="insight-title">链接已保存</span>
+          <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
+        </div>
+        <div class="insight-body" style="margin-bottom:8px;">
+          <span style="color:var(--text-tertiary);">暂时无法读取${platform.name}的页面内容，链接已保存到记录中。</span>
+        </div>
+        <div class="insight-body">${insight.summary}</div>
+        ${insight.related && insight.related.length > 0 ? `
+          <div class="insight-related"><div class="insight-related-label">关联记录</div>
+          ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
       </div>`;
   }
-
-  container.innerHTML = `
-    <div class="insight-card${insight.mode === 'encouragement' ? ' encouragement' : ''}" style="${linkData?.summary ? 'border-color: rgba(100,210,255,0.15); background: linear-gradient(135deg, rgba(100,210,255,0.06), rgba(10,132,255,0.06));' : ''}">
-      <div class="insight-header">
-        <span class="insight-icon">${linkData?.summary ? '🔗' : insight.icon}</span>
-        <span class="insight-title">${linkData?.summary ? '链接已解析' : insight.title}</span>
-        <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
-      </div>
-      ${linkHtml}
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
-        <div class="insight-body">${insight.summary}</div>
-      </div>
-      ${insight.related && insight.related.length > 0 ? `
-        <div class="insight-related"><div class="insight-related-label">关联记录</div>
-        ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
-    </div>`;
 }
 
 // ---- Save link summary to DB ----
