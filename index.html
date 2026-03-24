@@ -721,14 +721,15 @@ function identifyPlatform(url) {
 // ---- 小红书分享文本预解析（前端直接提取，不依赖后端）----
 function parseXhsShareText(fullText) {
   // 小红书分享文本常见格式:
-  // "58 花名不详🌿 发布了一篇小红书笔记，快来看吧！ 😆 xNxxxxxx 😆 http://xhslink.com/a/xxx"
-  // "22 作者名 发布了一篇小红书笔记，快来看吧！ 😆 笔记标题内容 😆 http://xhslink.com/xxx"
-  // "#标题标签# 作者名的小红书 http://xhslink.com/xxx"
+  // 格式A: "58 花名不详🌿 发布了一篇小红书笔记，快来看吧！ 😆 笔记标题 😆 http://xhslink.com/a/xxx"
+  // 格式B: "#标题标签# 作者名的小红书 http://xhslink.com/xxx"
+  // 格式C: "标题内容 💽 作者... http://xhslink.com/xxx 复制后打开【小红书】查看笔记！"
+  // 格式D: "标题内容 http://xhslink.com/xxx 复制后打开【小红书】查看笔记！"
   if (!fullText || !/xhslink\.com|xiaohongshu\.com/.test(fullText)) return null;
 
   let author = '', title = '';
 
-  // 格式1: "XX 作者名 发布了一篇小红书笔记" + "😆 标题 😆"
+  // 格式A: "XX 作者名 发布了一篇小红书笔记" + "😆 标题 😆"
   const m1 = fullText.match(/\d+\s+(.+?)\s+发布了一篇小红书笔记/);
   if (m1) author = m1[1].trim();
 
@@ -736,17 +737,38 @@ function parseXhsShareText(fullText) {
   const m2 = fullText.match(/😆\s*(.+?)\s*😆/);
   if (m2) title = m2[1].trim();
 
-  // 格式2: "作者名 的小红书" 或 "来自 作者名 的分享"
+  // "来自 作者名 的分享/小红书"
   if (!author) {
     const m3 = fullText.match(/来自\s*(.+?)\s*的(?:分享|小红书)/);
     if (m3) author = m3[1].trim();
   }
 
-  // 格式3: #话题标签# 作为标题线索
+  // 格式B: #话题标签# 作为标题线索
   if (!title) {
     const hashTags = fullText.match(/#([^#]+?)#/g);
     if (hashTags && hashTags.length > 0) {
       title = hashTags.map(t => t.replace(/#/g, '')).join(' ');
+    }
+  }
+
+  // 格式C/D（通用 fallback）: URL 前面的内容就是标题
+  // 去掉已知后缀和 URL，剩下的就是标题
+  if (!title) {
+    const urlMatch = fullText.match(/https?:\/\/(xhslink\.com|xiaohongshu\.com)[^\s]*/);
+    if (urlMatch) {
+      let beforeUrl = fullText.substring(0, fullText.indexOf(urlMatch[0])).trim();
+      // 清理尾部 emoji 和省略号（如 "💽 Claude..."）
+      // 如果尾部有 "作者..." 的模式，尝试提取作者
+      const authorTrail = beforeUrl.match(/[\s\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+(\S+?)\.{2,3}$/u);
+      if (authorTrail) {
+        author = author || authorTrail[1].trim();
+        beforeUrl = beforeUrl.substring(0, authorTrail.index).trim();
+      }
+      // 清理末尾残留的 emoji
+      beforeUrl = beforeUrl.replace(/[\s\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}]+$/u, '').trim();
+      if (beforeUrl.length >= 2) {
+        title = beforeUrl;
+      }
     }
   }
 
