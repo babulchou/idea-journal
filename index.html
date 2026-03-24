@@ -35,32 +35,21 @@
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    min-height: 100dvh;
-    -webkit-font-smoothing: antialiased;
-    overscroll-behavior: none;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; min-height: 100dvh;
+    -webkit-font-smoothing: antialiased; overscroll-behavior: none;
   }
 
   .app {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
+    max-width: 480px; margin: 0 auto;
+    min-height: 100vh; min-height: 100dvh;
+    display: flex; flex-direction: column;
     padding-top: calc(var(--safe-top) + 8px);
     padding-bottom: var(--safe-bottom);
   }
 
   /* ---- Header ---- */
-  .header {
-    padding: 16px 20px 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  .header { padding: 16px 20px 8px; display: flex; justify-content: space-between; align-items: center; }
   .header h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; }
   .header-actions { display: flex; gap: 8px; align-items: center; }
   .icon-btn {
@@ -102,7 +91,6 @@
   .compose-input::placeholder { color: var(--text-tertiary); }
   .compose-input:focus { border-color: rgba(10,132,255,0.4); }
 
-  /* ---- Category Chips (inline) ---- */
   .compose-section-label {
     font-size: 13px; font-weight: 600; color: var(--text-secondary);
     letter-spacing: 0.3px; display: flex; align-items: center; gap: 6px;
@@ -111,9 +99,7 @@
     font-size: 10px; font-weight: 600; background: linear-gradient(135deg, #0a84ff, #bf5af2);
     color: white; padding: 1px 7px; border-radius: 6px;
   }
-  .compose-chips {
-    display: flex; flex-wrap: wrap; gap: 8px;
-  }
+  .compose-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .compose-chip {
     padding: 8px 16px; border-radius: 20px;
     border: 1.5px solid var(--border); background: transparent;
@@ -123,9 +109,7 @@
     position: relative;
   }
   .compose-chip:active { transform: scale(0.95); }
-  .compose-chip.selected {
-    border-color: var(--accent); background: var(--accent-light); color: var(--accent);
-  }
+  .compose-chip.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
   .compose-chip .rec-dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: var(--accent); display: none;
@@ -149,42 +133,28 @@
   .submit-btn:active { transform: scale(0.98); opacity: 0.85; }
   .submit-btn:disabled { background: rgba(10,132,255,0.3); color: rgba(255,255,255,0.4); cursor: not-allowed; }
 
-  /* ---- Insight Card (post-save) ---- */
+  /* ---- Insight Card ---- */
   .insight-card {
     background: linear-gradient(135deg, rgba(10,132,255,0.08), rgba(191,90,242,0.08));
-    border: 1px solid rgba(10,132,255,0.15);
-    border-radius: 16px;
-    padding: 16px;
-    animation: insightSlideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    border: 1px solid rgba(10,132,255,0.15); border-radius: 16px; padding: 16px;
+    animation: slideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   }
-  @keyframes insightSlideIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .insight-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .insight-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
   .insight-icon { font-size: 18px; }
   .insight-title {
     font-size: 14px; font-weight: 600;
     background: linear-gradient(135deg, var(--accent), var(--purple));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .insight-close {
     margin-left: auto; background: none; border: none;
     color: var(--text-tertiary); font-size: 18px; cursor: pointer;
     padding: 2px 6px; -webkit-tap-highlight-color: transparent;
   }
-  .insight-body {
-    font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.75);
-  }
-  .insight-body strong {
-    color: var(--accent); font-weight: 600;
-  }
-  .insight-related {
-    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);
-  }
+  .insight-body { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.75); }
+  .insight-body strong { color: var(--accent); font-weight: 600; }
+  .insight-related { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
   .insight-related-label {
     font-size: 11px; font-weight: 600; color: var(--text-tertiary);
     text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
@@ -195,11 +165,154 @@
   }
   .insight-related-item::before { content: '·'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
 
+  /* ---- Ask Bar (Review Page) ---- */
+  .ask-bar {
+    padding: 12px 20px; display: flex; gap: 8px; align-items: center;
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  }
+  .ask-input {
+    flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 22px;
+    padding: 10px 16px; color: var(--text); font-size: 14px; outline: none; font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .ask-input::placeholder { color: var(--text-tertiary); }
+  .ask-input:focus { border-color: rgba(10,132,255,0.4); }
+  .ask-send {
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: var(--accent); color: white; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .ask-send:active { transform: scale(0.9); }
+  .ask-send:disabled { background: rgba(10,132,255,0.3); cursor: not-allowed; }
+
+  /* ---- Answer Panel ---- */
+  .answer-panel {
+    margin: 0 20px 12px; border-radius: 16px; overflow: hidden;
+    animation: slideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .answer-intent {
+    display: flex; align-items: center; gap: 8px; padding: 14px 16px;
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  }
+  .answer-intent-icon { font-size: 16px; }
+  .answer-intent-label {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .answer-close {
+    margin-left: auto; background: none; border: none;
+    color: var(--text-tertiary); font-size: 18px; cursor: pointer;
+    padding: 2px 6px; -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Search result style */
+  .answer-panel.search-mode { background: var(--card); border: 1px solid var(--border); }
+  .answer-panel.search-mode .answer-question {
+    padding: 0 16px 10px; font-size: 13px; color: var(--text-tertiary); line-height: 1.4;
+  }
+  .search-results { display: flex; flex-direction: column; }
+  .search-result-item {
+    padding: 12px 16px; border-top: 1px solid var(--border);
+    cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+  }
+  .search-result-item:active { background: rgba(255,255,255,0.04); }
+  .search-result-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .search-result-badge { font-size: 10px; padding: 2px 7px; border-radius: 8px; font-weight: 500; }
+  .search-result-badge.thought { background: rgba(10,132,255,0.15); color: var(--accent); }
+  .search-result-badge.inspiration { background: rgba(255,159,10,0.15); color: var(--orange); }
+  .search-result-badge.todo { background: rgba(48,209,88,0.15); color: var(--green); }
+  .search-result-badge.quote { background: rgba(191,90,242,0.15); color: var(--purple); }
+  .search-result-badge.link { background: rgba(100,210,255,0.15); color: var(--teal); }
+  .search-result-badge.reflection { background: rgba(255,214,10,0.15); color: var(--yellow); }
+  .search-result-badge.product { background: rgba(255,55,95,0.15); color: var(--pink); }
+  .search-result-time { font-size: 11px; color: var(--text-tertiary); }
+  .search-result-content { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8); }
+  .search-result-content mark {
+    background: rgba(10,132,255,0.25); color: var(--accent);
+    border-radius: 2px; padding: 0 2px;
+  }
+  .search-result-score {
+    font-size: 11px; color: var(--text-tertiary); margin-top: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  /* Summary result style */
+  .answer-panel.summary-mode {
+    background: linear-gradient(135deg, rgba(10,132,255,0.06), rgba(191,90,242,0.06));
+    border: 1px solid rgba(10,132,255,0.12);
+  }
+  .answer-panel.summary-mode .answer-question {
+    padding: 0 16px 10px; font-size: 13px; color: var(--text-tertiary); line-height: 1.4;
+  }
+  .summary-body {
+    padding: 0 16px 16px; font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.8);
+  }
+  .summary-body strong { color: var(--accent); font-weight: 600; }
+  .summary-body .summary-section {
+    margin-bottom: 12px;
+  }
+  .summary-body .summary-section-title {
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .summary-body .summary-section-title::before {
+    content: ''; width: 3px; height: 14px; border-radius: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--purple)); flex-shrink: 0;
+  }
+  .summary-body .summary-point {
+    padding: 3px 0; display: flex; align-items: flex-start; gap: 8px;
+  }
+  .summary-body .summary-point::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0; margin-top: 8px;
+  }
+  .summary-sources {
+    padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .summary-sources-label {
+    font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+    letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .summary-source-item {
+    font-size: 12px; color: var(--text-secondary); padding: 2px 0;
+    display: flex; align-items: flex-start; gap: 6px; line-height: 1.4;
+  }
+  .summary-source-item::before { content: '→'; color: var(--accent); flex-shrink: 0; font-size: 11px; }
+
+  /* Thinking animation */
+  .thinking { padding: 20px 16px; display: flex; align-items: center; gap: 10px; }
+  .thinking-dots { display: flex; gap: 4px; }
+  .thinking-dots span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    animation: thinking 1.4s ease-in-out infinite;
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes thinking {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+  .thinking-text { font-size: 13px; color: var(--text-secondary); }
+
+  /* Highlighted entry card */
+  .entry-card.highlighted {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 20px rgba(10,132,255,0.15);
+    animation: highlightPulse 2s ease-out;
+  }
+  @keyframes highlightPulse {
+    0% { box-shadow: 0 0 0 1px var(--accent), 0 4px 30px rgba(10,132,255,0.3); }
+    100% { box-shadow: 0 0 0 1px var(--accent), 0 4px 20px rgba(10,132,255,0.15); }
+  }
+
   /* ---- Entry List ---- */
   .entry-list { padding: 8px 20px 100px; display: flex; flex-direction: column; gap: 12px; }
   .entry-card {
     background: var(--card); border-radius: 16px; padding: 16px;
-    border: 1px solid var(--border); transition: transform 0.15s;
+    border: 1px solid var(--border); transition: all 0.3s;
   }
   .entry-card:active { transform: scale(0.98); }
   .entry-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
@@ -212,7 +325,6 @@
   .entry-type-badge.link { background: rgba(100,210,255,0.15); color: var(--teal); }
   .entry-type-badge.reflection { background: rgba(255,214,10,0.15); color: var(--yellow); }
   .entry-type-badge.product { background: rgba(255,55,95,0.15); color: var(--pink); }
-
   .entry-time { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; }
   .entry-content { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.85); word-break: break-word; }
   .entry-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
@@ -222,8 +334,7 @@
     cursor: pointer; padding: 4px; -webkit-tap-highlight-color: transparent;
     opacity: 0; transition: opacity 0.2s;
   }
-  .entry-card:hover .entry-delete,
-  .entry-card:active .entry-delete { opacity: 1; }
+  .entry-card:hover .entry-delete, .entry-card:active .entry-delete { opacity: 1; }
 
   .empty-state {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -277,25 +388,25 @@
   </div>
 
   <div class="content">
+    <!-- Compose View -->
     <div class="compose" id="composeView">
       <textarea class="compose-input" id="contentInput" placeholder="写下你此刻的想法..." autofocus></textarea>
-
-      <div class="compose-section-label">
-        分类 <span class="ai-badge">AI 推荐</span>
-      </div>
+      <div class="compose-section-label">分类 <span class="ai-badge">AI 推荐</span></div>
       <div class="compose-chips" id="composeChips"></div>
-
       <div class="tags-input-row">
         <input class="tags-input" id="tagsInput" placeholder="标签（可选，空格或逗号分隔）">
       </div>
-
       <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">记下来</button>
-
-      <!-- Insight card appears here after successful save -->
       <div id="insightContainer"></div>
     </div>
 
+    <!-- List View -->
     <div id="listView" style="display:none;">
+      <div class="ask-bar">
+        <input class="ask-input" id="askInput" placeholder="问问你的想法库..." enterkeyhint="send">
+        <button class="ask-send" id="askSend" onclick="handleAsk()">↑</button>
+      </div>
+      <div id="answerContainer"></div>
       <div class="counter" id="counter"></div>
       <div class="entry-list" id="entryList"></div>
     </div>
@@ -310,29 +421,27 @@ const SUPABASE_URL = 'https://dbduutzsoynmhbfazpxu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZHV1dHpzb3lubWhiZmF6cHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzU3NDIsImV4cCI6MjA4OTg1MTc0Mn0.lTrhFI7KlhbYQlvyCJ-n-MIPR9uRJ3nW44tE2CNRCW8';
 const API_BASE = `${SUPABASE_URL}/rest/v1`;
 const headers = {
-  'apikey': SUPABASE_KEY,
-  'Authorization': `Bearer ${SUPABASE_KEY}`,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
+  'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json', 'Prefer': 'return=representation'
 };
 
-// ---- All available categories ----
 const CATEGORIES = [
-  { id: 'thought',     emoji: '💭', label: '想法' },
+  { id: 'thought', emoji: '💭', label: '想法' },
   { id: 'inspiration', emoji: '⚡', label: '灵感' },
-  { id: 'todo',        emoji: '✅', label: '待办' },
-  { id: 'quote',       emoji: '📖', label: '摘录' },
-  { id: 'link',        emoji: '🔗', label: '链接' },
-  { id: 'reflection',  emoji: '🪞', label: '感悟' },
-  { id: 'product',     emoji: '🧪', label: '产品' },
+  { id: 'todo', emoji: '✅', label: '待办' },
+  { id: 'quote', emoji: '📖', label: '摘录' },
+  { id: 'link', emoji: '🔗', label: '链接' },
+  { id: 'reflection', emoji: '🪞', label: '感悟' },
+  { id: 'product', emoji: '🧪', label: '产品' },
 ];
+const typeLabels = {};
+CATEGORIES.forEach(c => typeLabels[c.id] = c.label);
 
-// ---- Smart Classification Rules ----
+// ---- Smart Classification ----
 function classifyContent(text) {
   const t = text.toLowerCase();
   const scores = {};
   CATEGORIES.forEach(c => scores[c.id] = 0);
-
   if (/https?:\/\/|www\.|\.com|\.cn|\.io|\.org|\.net/i.test(t) || /xhslink|bilibili|zhihu|weixin|douyin/i.test(t)) scores.link += 10;
   if (/要做|需要|待办|todo|记得|别忘|提醒|deadline|ddl|计划做|打算/i.test(t)) scores.todo += 10;
   if (/[""「」『』]/.test(text) || /说过|名言|摘录|原文|出自|引用|——.*说/i.test(t)) scores.quote += 8;
@@ -348,26 +457,25 @@ function classifyContent(text) {
     if (scores.reflection > 0) scores.reflection += 3;
   }
   scores.thought += 3;
-
   const sorted = Object.entries(scores).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]);
   if (sorted.length === 0) return ['thought'];
   const topScore = sorted[0][1];
-  const recommended = [];
-  sorted.forEach(([id, score]) => {
-    if (score >= topScore * 0.5 && score > 3) recommended.push(id);
-  });
-  if (recommended.length === 0) recommended.push(sorted[0][0]);
-  return recommended.slice(0, 3);
+  const rec = [];
+  sorted.forEach(([id, score]) => { if (score >= topScore * 0.5 && score > 3) rec.push(id); });
+  if (rec.length === 0) rec.push(sorted[0][0]);
+  return rec.slice(0, 3);
 }
 
 // ---- State ----
 let entries = [];
-let cachedEntries = []; // cached for insight analysis
+let allEntries = []; // all entries loaded for Q&A
+let cachedEntries = [];
 let selectedTypes = new Set();
 let currentRecommended = [];
+let manuallyDeselected = new Set();
 let debounceTimer = null;
 
-// ---- Render Category Chips (always visible in compose) ----
+// ---- Compose Chips ----
 function renderComposeChips() {
   const grid = document.getElementById('composeChips');
   grid.innerHTML = CATEGORIES.map(c => {
@@ -375,55 +483,28 @@ function renderComposeChips() {
     const isRec = currentRecommended.includes(c.id);
     return `<button class="compose-chip ${isSel ? 'selected' : ''} ${isRec ? 'recommended' : ''}"
               data-type="${c.id}" onclick="toggleChip('${c.id}')">
-              ${c.emoji} ${c.label}
-              <span class="rec-dot"></span>
-            </button>`;
+              ${c.emoji} ${c.label}<span class="rec-dot"></span></button>`;
   }).join('');
 }
 
 function toggleChip(typeId) {
   if (selectedTypes.has(typeId)) {
     selectedTypes.delete(typeId);
-  } else {
-    selectedTypes.add(typeId);
-  }
-  renderComposeChips();
-}
-
-// ---- Auto-recommend on input change ----
-function onContentChange() {
-  const text = document.getElementById('contentInput').value.trim();
-  if (text.length < 4) {
-    currentRecommended = [];
-    // Don't clear manual selections
-    renderComposeChips();
-    return;
-  }
-  const rec = classifyContent(text);
-  // Only auto-update recommended highlights, preserve manual selections
-  const prevRec = new Set(currentRecommended);
-  currentRecommended = rec;
-  // Auto-select newly recommended ones (unless user has manually deselected)
-  rec.forEach(r => {
-    if (!prevRec.has(r) && !manuallyDeselected.has(r)) {
-      selectedTypes.add(r);
-    }
-  });
-  renderComposeChips();
-}
-
-// Track what user manually deselected to not re-add
-let manuallyDeselected = new Set();
-function toggleChip(typeId) {
-  if (selectedTypes.has(typeId)) {
-    selectedTypes.delete(typeId);
-    if (currentRecommended.includes(typeId)) {
-      manuallyDeselected.add(typeId);
-    }
+    if (currentRecommended.includes(typeId)) manuallyDeselected.add(typeId);
   } else {
     selectedTypes.add(typeId);
     manuallyDeselected.delete(typeId);
   }
+  renderComposeChips();
+}
+
+function onContentChange() {
+  const text = document.getElementById('contentInput').value.trim();
+  if (text.length < 4) { currentRecommended = []; renderComposeChips(); return; }
+  const rec = classifyContent(text);
+  const prevRec = new Set(currentRecommended);
+  currentRecommended = rec;
+  rec.forEach(r => { if (!prevRec.has(r) && !manuallyDeselected.has(r)) selectedTypes.add(r); });
   renderComposeChips();
 }
 
@@ -448,216 +529,542 @@ function updateIndicator() {
 async function handleSubmit() {
   const content = document.getElementById('contentInput').value.trim();
   if (!content) { showToast('写点什么再提交'); return; }
-
-  // If no type selected, auto-classify
-  if (selectedTypes.size === 0) {
-    const auto = classifyContent(content);
-    auto.forEach(t => selectedTypes.add(t));
-    renderComposeChips();
-  }
-
+  if (selectedTypes.size === 0) { classifyContent(content).forEach(t => selectedTypes.add(t)); renderComposeChips(); }
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '保存中...';
-
+  btn.disabled = true; btn.textContent = '保存中...';
   const typesArray = Array.from(selectedTypes);
   const primaryType = typesArray[0];
-  const extraTypeTags = typesArray.slice(1).map(t => {
-    const cat = CATEGORIES.find(c => c.id === t);
-    return cat ? cat.label : t;
-  });
-
+  const extraTypeTags = typesArray.slice(1).map(t => { const c = CATEGORIES.find(c => c.id === t); return c ? c.label : t; });
   const tagsRaw = document.getElementById('tagsInput').value.trim();
   const userTags = tagsRaw ? tagsRaw.split(/[\s,，、]+/).filter(Boolean) : [];
   const allTags = [...userTags, ...extraTypeTags];
   const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
-
-  const entry = {
-    title,
-    content,
-    type: primaryType,
-    tags: allTags,
-    source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑',
-  };
-
+  const entry = { title, content, type: primaryType, tags: allTags, source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑' };
   try {
-    const res = await fetch(`${API_BASE}/entries`, {
-      method: 'POST', headers,
-      body: JSON.stringify(entry)
-    });
+    const res = await fetch(`${API_BASE}/entries`, { method: 'POST', headers, body: JSON.stringify(entry) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const saved = await res.json();
-
-    // Clear form
     document.getElementById('contentInput').value = '';
     document.getElementById('contentInput').style.height = 'auto';
     document.getElementById('tagsInput').value = '';
-    selectedTypes.clear();
-    currentRecommended = [];
-    manuallyDeselected.clear();
+    selectedTypes.clear(); currentRecommended = []; manuallyDeselected.clear();
     renderComposeChips();
-
-    btn.disabled = false;
-    btn.textContent = '记下来';
+    btn.disabled = false; btn.textContent = '记下来';
     showToast('已记录 ✓');
     if (navigator.vibrate) navigator.vibrate(10);
-
-    // Generate insight asynchronously
     generateInsight(saved[0] || { ...entry, content });
   } catch (err) {
     console.error('Save error:', err);
     showToast('保存失败，请检查网络');
-    btn.disabled = false;
-    btn.textContent = '记下来';
+    btn.disabled = false; btn.textContent = '记下来';
   }
 }
 
-// ---- Insight Generation ----
+// ---- Insight (post-save) ----
 async function generateInsight(newEntry) {
   const container = document.getElementById('insightContainer');
-
-  // Fetch recent entries for context (if not cached)
   try {
     if (cachedEntries.length === 0) {
       const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers });
       if (res.ok) cachedEntries = await res.json();
     }
-  } catch { /* ignore, just won't show insight */ }
-
-  // Exclude the just-saved entry itself
-  const otherEntries = cachedEntries.filter(e => e.id !== newEntry.id);
-  if (otherEntries.length < 1) {
-    // Not enough history, don't show insight
-    container.innerHTML = '';
-    return;
-  }
-
-  // Analyze relationships
-  const insight = analyzeInsight(newEntry, otherEntries);
-  if (!insight) {
-    container.innerHTML = '';
-    return;
-  }
-
-  // Add new entry to cached list
+  } catch {}
+  const others = cachedEntries.filter(e => e.id !== newEntry.id);
+  if (others.length < 1) { container.innerHTML = ''; return; }
+  const insight = analyzeInsight(newEntry, others);
+  if (!insight) { container.innerHTML = ''; return; }
   cachedEntries.unshift(newEntry);
   if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
-
-  // Render insight card
   container.innerHTML = `
     <div class="insight-card">
       <div class="insight-header">
-        <span class="insight-icon">✨</span>
-        <span class="insight-title">灵感亮点</span>
+        <span class="insight-icon">✨</span><span class="insight-title">灵感亮点</span>
         <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
       </div>
       <div class="insight-body">${insight.summary}</div>
       ${insight.related.length > 0 ? `
-        <div class="insight-related">
-          <div class="insight-related-label">关联记录</div>
-          ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}
-        </div>
-      ` : ''}
-    </div>
-  `;
+        <div class="insight-related"><div class="insight-related-label">关联记录</div>
+        ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
+    </div>`;
 }
 
 function analyzeInsight(newEntry, history) {
-  const content = newEntry.content.toLowerCase();
   const newWords = extractKeywords(newEntry.content);
-
-  // Find related entries by keyword overlap
   const scored = history.map(e => {
     const eWords = extractKeywords(e.content);
     const overlap = newWords.filter(w => eWords.includes(w));
-    // Also check type match
     const sameType = e.type === newEntry.type ? 1 : 0;
-    // Tag overlap
     const newTags = new Set(newEntry.tags || []);
-    const eTags = (e.tags || []);
-    const tagOverlap = eTags.filter(t => newTags.has(t)).length;
-    return {
-      entry: e,
-      score: overlap.length * 3 + sameType * 1 + tagOverlap * 2,
-      overlapWords: overlap,
-    };
+    const tagOverlap = (e.tags || []).filter(t => newTags.has(t)).length;
+    return { entry: e, score: overlap.length * 3 + sameType + tagOverlap * 2, overlapWords: overlap };
   }).filter(s => s.score > 2).sort((a, b) => b.score - a.score);
-
   if (scored.length === 0) return null;
-
-  const topRelated = scored.slice(0, 3);
-  const relatedTexts = topRelated.map(s => {
-    const preview = s.entry.content.length > 50 ? s.entry.content.substring(0, 50) + '...' : s.entry.content;
-    return preview;
-  });
-
-  // Build summary
+  const top = scored.slice(0, 3);
+  const related = top.map(s => s.entry.content.length > 50 ? s.entry.content.substring(0, 50) + '...' : s.entry.content);
+  const allOW = [...new Set(top.flatMap(s => s.overlapWords))];
   let summary = '';
-  const allOverlapWords = [...new Set(topRelated.flatMap(s => s.overlapWords))];
-
-  if (allOverlapWords.length > 0) {
-    const keywordHighlight = allOverlapWords.slice(0, 4).map(w => `<strong>${w}</strong>`).join('、');
-    
-    // Check for patterns
-    const sameTypeCount = topRelated.filter(s => s.entry.type === newEntry.type).length;
-    const typeLabel = CATEGORIES.find(c => c.id === newEntry.type)?.label || newEntry.type;
-
-    if (topRelated.length >= 2) {
-      summary = `这条记录与你之前的 <strong>${topRelated.length} 条想法</strong>有关联，核心关键词：${keywordHighlight}。`;
-      if (sameTypeCount >= 2) {
-        summary += ` 你已经在「${typeLabel}」类下积累了多条相关记录，这个方向值得持续深挖。`;
-      } else {
-        summary += ` 这些想法跨越了不同分类，或许正在形成一个更大的思考脉络。`;
-      }
+  if (allOW.length > 0) {
+    const kw = allOW.slice(0, 4).map(w => `<strong>${w}</strong>`).join('、');
+    const stc = top.filter(s => s.entry.type === newEntry.type).length;
+    const tl = CATEGORIES.find(c => c.id === newEntry.type)?.label || newEntry.type;
+    if (top.length >= 2) {
+      summary = `这条记录与你之前的 <strong>${top.length} 条想法</strong>有关联，核心关键词：${kw}。`;
+      summary += stc >= 2 ? ` 你已经在「${tl}」类下积累了多条相关记录，值得持续深挖。` : ` 这些想法跨越不同分类，或许正形成更大的思考脉络。`;
     } else {
-      summary = `这条记录与一条历史想法产生了共鸣，关键词：${keywordHighlight}。持续记录，连点成线。`;
+      summary = `这条记录与一条历史想法产生了共鸣，关键词：${kw}。持续记录，连点成线。`;
     }
   } else {
-    // Related by type/tags but no keyword overlap
     summary = `你最近在相似方向上有不少思考，持续积累会带来意想不到的灵感碰撞。`;
   }
-
-  // Check for emerging theme
-  const typeCounts = {};
-  history.forEach(e => { typeCounts[e.type] = (typeCounts[e.type] || 0) + 1; });
-  const nt = newEntry.type;
-  if (typeCounts[nt] && typeCounts[nt] >= 4) {
-    const typeLabel = CATEGORIES.find(c => c.id === nt)?.label || nt;
-    summary += ` 提示：你在「${typeLabel}」类别下已有 ${typeCounts[nt]+1} 条记录，这是你活跃的思考领域。`;
+  const tc = {}; history.forEach(e => { tc[e.type] = (tc[e.type] || 0) + 1; });
+  if (tc[newEntry.type] >= 4) {
+    const tl = CATEGORIES.find(c => c.id === newEntry.type)?.label || newEntry.type;
+    summary += ` 提示：你在「${tl}」下已有 ${tc[newEntry.type]+1} 条记录。`;
   }
-
-  return {
-    summary,
-    related: relatedTexts,
-  };
+  return { summary, related };
 }
 
+// ================================================
+// ========= ASK / Q&A FEATURE (Review Page) ======
+// ================================================
+
+function detectIntent(question) {
+  const q = question.toLowerCase();
+
+  // Search intent: user wants to find a specific record
+  const searchPatterns = [
+    /找|搜|查|哪条|哪个|哪篇|在哪|定位|搜索/,
+    /记过|写过|提过|说过|记录过|有没有/,
+    /关于.{1,8}(的|那条|那个|记录)/,
+    /^.{1,15}(在哪|是哪)/,
+  ];
+
+  // Summary intent: user wants analysis/thinking
+  const summaryPatterns = [
+    /总结|分析|归纳|梳理|盘点|回顾|复盘|概括/,
+    /有什么|有哪些|有几条|多少条/,
+    /趋势|规律|特点|共性|主题|方向/,
+    /怎么看|怎么想|什么想法|什么思考/,
+    /帮我|给我|列出|整理|提炼/,
+    /最近|这段时间|这周|这几天|近期/,
+  ];
+
+  let searchScore = 0, summaryScore = 0;
+  searchPatterns.forEach(p => { if (p.test(q)) searchScore++; });
+  summaryPatterns.forEach(p => { if (p.test(q)) summaryScore++; });
+
+  // If question is short and looks like a keyword → treat as search
+  if (question.length <= 8 && summaryScore === 0) searchScore += 2;
+
+  // If question ends with ? or ？ and is longer → more likely summary
+  if (/[?？]$/.test(question) && question.length > 10) summaryScore += 1;
+
+  return summaryScore > searchScore ? 'summary' : 'search';
+}
+
+async function handleAsk() {
+  const input = document.getElementById('askInput');
+  const question = input.value.trim();
+  if (!question) return;
+
+  const container = document.getElementById('answerContainer');
+  const sendBtn = document.getElementById('askSend');
+  sendBtn.disabled = true;
+
+  // Show thinking
+  container.innerHTML = `
+    <div class="answer-panel search-mode">
+      <div class="thinking">
+        <div class="thinking-dots"><span></span><span></span><span></span></div>
+        <span class="thinking-text">正在思考...</span>
+      </div>
+    </div>`;
+
+  // Load all entries if not loaded
+  if (allEntries.length === 0) {
+    try {
+      const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=200`, { headers });
+      if (res.ok) allEntries = await res.json();
+    } catch {
+      container.innerHTML = '';
+      showToast('加载记录失败');
+      sendBtn.disabled = false;
+      return;
+    }
+  }
+
+  if (allEntries.length === 0) {
+    container.innerHTML = '';
+    showToast('还没有记录');
+    sendBtn.disabled = false;
+    return;
+  }
+
+  // Small delay for UX feel
+  await new Promise(r => setTimeout(r, 400));
+
+  const intent = detectIntent(question);
+
+  if (intent === 'search') {
+    renderSearchAnswer(question, container);
+  } else {
+    renderSummaryAnswer(question, container);
+  }
+
+  sendBtn.disabled = false;
+  // Don't clear input so user can refine
+}
+
+// ---- Search Mode: Find and highlight records ----
+function renderSearchAnswer(question, container) {
+  const questionKW = extractKeywords(question);
+  const questionLower = question.toLowerCase();
+
+  // Score each entry for relevance
+  const scored = allEntries.map(e => {
+    const entryKW = extractKeywords(e.content);
+    const contentLower = e.content.toLowerCase();
+
+    let score = 0;
+    const matchedWords = [];
+
+    // Direct substring match (strongest signal)
+    questionKW.forEach(kw => {
+      if (contentLower.includes(kw.toLowerCase())) {
+        score += 5;
+        matchedWords.push(kw);
+      }
+    });
+
+    // Keyword overlap
+    const overlap = questionKW.filter(w => entryKW.includes(w));
+    score += overlap.length * 3;
+    overlap.forEach(w => { if (!matchedWords.includes(w)) matchedWords.push(w); });
+
+    // Tag match
+    const tags = (e.tags || []).map(t => t.toLowerCase());
+    questionKW.forEach(kw => {
+      if (tags.some(t => t.includes(kw.toLowerCase()))) score += 4;
+    });
+
+    // Type label match
+    const tl = typeLabels[e.type] || '';
+    if (questionLower.includes(tl)) score += 3;
+
+    return { entry: e, score, matchedWords: [...new Set(matchedWords)] };
+  }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+  if (scored.length === 0) {
+    container.innerHTML = `
+      <div class="answer-panel search-mode">
+        <div class="answer-intent">
+          <span class="answer-intent-icon">🔍</span>
+          <span class="answer-intent-label">搜索记录</span>
+          <button class="answer-close" onclick="closeAnswer()">&times;</button>
+        </div>
+        <div style="padding: 20px 16px; text-align: center; color: var(--text-tertiary); font-size: 14px;">
+          没找到相关记录，试试换个关键词？
+        </div>
+      </div>`;
+    return;
+  }
+
+  const topResults = scored.slice(0, 5);
+
+  container.innerHTML = `
+    <div class="answer-panel search-mode">
+      <div class="answer-intent">
+        <span class="answer-intent-icon">🔍</span>
+        <span class="answer-intent-label">找到 ${scored.length} 条相关记录</span>
+        <button class="answer-close" onclick="closeAnswer()">&times;</button>
+      </div>
+      <div class="answer-question">"${escapeHtml(question)}"</div>
+      <div class="search-results">
+        ${topResults.map((s, i) => {
+          const e = s.entry;
+          const date = new Date(e.created_at);
+          const timeStr = formatTime(date);
+          const highlighted = highlightText(e.content, s.matchedWords);
+          const relevance = Math.min(100, Math.round(s.score / topResults[0].score * 100));
+          return `
+            <div class="search-result-item" onclick="scrollToEntry('${e.id}')">
+              <div class="search-result-header">
+                <span class="search-result-badge ${e.type}">${typeLabels[e.type] || e.type}</span>
+                <span class="search-result-time">${timeStr}</span>
+              </div>
+              <div class="search-result-content">${highlighted}</div>
+              <div class="search-result-score">
+                <span style="color:var(--accent);">●</span> 相关度 ${relevance}%
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function highlightText(text, keywords) {
+  let result = escapeHtml(text);
+  if (text.length > 120) result = escapeHtml(text.substring(0, 120)) + '...';
+  keywords.forEach(kw => {
+    const regex = new RegExp(`(${escapeRegex(escapeHtml(kw))})`, 'gi');
+    result = result.replace(regex, '<mark>$1</mark>');
+  });
+  return result;
+}
+
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function scrollToEntry(id) {
+  // Remove previous highlights
+  document.querySelectorAll('.entry-card.highlighted').forEach(el => el.classList.remove('highlighted'));
+
+  const card = document.querySelector(`.entry-card[data-id="${id}"]`);
+  if (card) {
+    card.classList.add('highlighted');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Remove highlight after 4s
+    setTimeout(() => card.classList.remove('highlighted'), 4000);
+  } else {
+    showToast('该记录不在当前列表中');
+  }
+}
+
+// ---- Summary Mode: Think and summarize ----
+function renderSummaryAnswer(question, container) {
+  const questionKW = extractKeywords(question);
+  const questionLower = question.toLowerCase();
+
+  // Find relevant entries
+  const scored = allEntries.map(e => {
+    const entryKW = extractKeywords(e.content);
+    const contentLower = e.content.toLowerCase();
+    let score = 0;
+    questionKW.forEach(kw => { if (contentLower.includes(kw.toLowerCase())) score += 5; });
+    const overlap = questionKW.filter(w => entryKW.includes(w));
+    score += overlap.length * 3;
+    const tags = (e.tags || []).map(t => t.toLowerCase());
+    questionKW.forEach(kw => { if (tags.some(t => t.includes(kw.toLowerCase()))) score += 4; });
+    const tl = typeLabels[e.type] || '';
+    if (questionLower.includes(tl)) score += 3;
+    return { entry: e, score };
+  }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+  // If no keyword matches, use all entries for broad questions
+  const relevantEntries = scored.length > 0 ? scored.slice(0, 15).map(s => s.entry) : allEntries.slice(0, 15);
+  const isGlobal = scored.length === 0; // broad question about everything
+
+  // Generate summary
+  const summary = generateSummary(question, relevantEntries, isGlobal);
+
+  const sources = relevantEntries.slice(0, 5).map(e =>
+    e.content.length > 40 ? e.content.substring(0, 40) + '...' : e.content
+  );
+
+  container.innerHTML = `
+    <div class="answer-panel summary-mode">
+      <div class="answer-intent">
+        <span class="answer-intent-icon">🧠</span>
+        <span class="answer-intent-label">思考总结</span>
+        <button class="answer-close" onclick="closeAnswer()">&times;</button>
+      </div>
+      <div class="answer-question">"${escapeHtml(question)}"</div>
+      <div class="summary-body">${summary}</div>
+      ${sources.length > 0 ? `
+        <div class="summary-sources">
+          <div class="summary-sources-label">基于以下记录</div>
+          ${sources.map(s => `<div class="summary-source-item">${escapeHtml(s)}</div>`).join('')}
+        </div>` : ''}
+    </div>`;
+}
+
+function generateSummary(question, relevantEntries, isGlobal) {
+  if (relevantEntries.length === 0) {
+    return '没有找到相关记录来回答这个问题。试试记录更多想法，让知识库更丰富。';
+  }
+
+  const questionLower = question.toLowerCase();
+
+  // Analyze entries
+  const typeDist = {};
+  const tagDist = {};
+  const timeSpan = { earliest: null, latest: null };
+  const allKeywords = {};
+  const contentSnippets = [];
+
+  relevantEntries.forEach(e => {
+    // Type distribution
+    typeDist[e.type] = (typeDist[e.type] || 0) + 1;
+
+    // Tag distribution
+    (e.tags || []).forEach(t => {
+      const typeLabelSet = new Set(Object.values(typeLabels));
+      if (!typeLabelSet.has(t)) tagDist[t] = (tagDist[t] || 0) + 1;
+    });
+
+    // Time span
+    const d = new Date(e.created_at);
+    if (!timeSpan.earliest || d < timeSpan.earliest) timeSpan.earliest = d;
+    if (!timeSpan.latest || d > timeSpan.latest) timeSpan.latest = d;
+
+    // Keywords
+    extractKeywords(e.content).forEach(kw => { allKeywords[kw] = (allKeywords[kw] || 0) + 1; });
+
+    // Content snippets
+    contentSnippets.push(e.content.length > 60 ? e.content.substring(0, 60) : e.content);
+  });
+
+  // Build structured summary
+  let html = '';
+
+  // Section 1: Overview
+  html += '<div class="summary-section">';
+  html += '<div class="summary-section-title">概览</div>';
+
+  if (isGlobal) {
+    html += `<div class="summary-point">你目前共有 <strong>${allEntries.length}</strong> 条记录`;
+    if (timeSpan.earliest) {
+      const days = Math.ceil((timeSpan.latest - timeSpan.earliest) / 86400000);
+      html += `，时间跨度 <strong>${days > 0 ? days + ' 天' : '今天'}</strong>`;
+    }
+    html += `。</div>`;
+  } else {
+    html += `<div class="summary-point">找到 <strong>${relevantEntries.length}</strong> 条相关记录。`;
+    if (timeSpan.earliest && timeSpan.latest) {
+      const days = Math.ceil((timeSpan.latest - timeSpan.earliest) / 86400000);
+      html += ` 时间跨度 <strong>${days > 0 ? days + ' 天' : '今天内'}</strong>。`;
+    }
+    html += '</div>';
+  }
+
+  // Type breakdown
+  const typeBreakdown = Object.entries(typeDist)
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, count]) => `${typeLabels[type] || type} ${count} 条`)
+    .join('、');
+  if (typeBreakdown) {
+    html += `<div class="summary-point">分类分布：${typeBreakdown}。</div>`;
+  }
+  html += '</div>';
+
+  // Section 2: Key themes
+  const topKeywords = Object.entries(allKeywords)
+    .sort((a, b) => b[1] - a[1])
+    .filter(([_, c]) => c >= 2)
+    .slice(0, 8);
+
+  if (topKeywords.length > 0) {
+    html += '<div class="summary-section">';
+    html += '<div class="summary-section-title">核心主题</div>';
+    const kwStr = topKeywords.map(([w, c]) => `<strong>${w}</strong>(${c}次)`).join('、');
+    html += `<div class="summary-point">高频关键词：${kwStr}。</div>`;
+
+    // Find thematic clusters
+    const clusters = findThematicClusters(relevantEntries);
+    if (clusters.length > 0) {
+      clusters.forEach(cl => {
+        html += `<div class="summary-point">${cl}</div>`;
+      });
+    }
+    html += '</div>';
+  }
+
+  // Section 3: Observations / Thinking
+  html += '<div class="summary-section">';
+  html += '<div class="summary-section-title">思考</div>';
+
+  // Check for patterns
+  const dominantType = Object.entries(typeDist).sort((a, b) => b[1] - a[1])[0];
+  if (dominantType && dominantType[1] >= 3) {
+    const label = typeLabels[dominantType[0]] || dominantType[0];
+    html += `<div class="summary-point">你的记录偏重「${label}」类，占 ${Math.round(dominantType[1] / relevantEntries.length * 100)}%，说明这是你当前重点关注的方向。</div>`;
+  }
+
+  // Check for evolution of thought
+  if (relevantEntries.length >= 3) {
+    const earlier = relevantEntries.slice(-Math.ceil(relevantEntries.length / 2));
+    const later = relevantEntries.slice(0, Math.ceil(relevantEntries.length / 2));
+    const earlyKW = new Set(earlier.flatMap(e => extractKeywords(e.content)));
+    const lateKW = new Set(later.flatMap(e => extractKeywords(e.content)));
+    const newConcepts = [...lateKW].filter(w => !earlyKW.has(w) && w.length >= 2).slice(0, 5);
+    if (newConcepts.length >= 2) {
+      html += `<div class="summary-point">最近的记录中出现了一些新概念：<strong>${newConcepts.join('、')}</strong>，你的思考在不断延伸。</div>`;
+    }
+  }
+
+  // Actionable suggestions
+  const todoEntries = relevantEntries.filter(e => e.type === 'todo');
+  if (todoEntries.length > 0) {
+    html += `<div class="summary-point">其中有 <strong>${todoEntries.length}</strong> 条待办事项，别忘了跟进执行。</div>`;
+  }
+
+  // Tags insight
+  const topTags = Object.entries(tagDist).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  if (topTags.length > 0) {
+    const tagStr = topTags.map(([t, c]) => `#${t}`).join(' ');
+    html += `<div class="summary-point">常用标签：${tagStr}——这些可能是你值得深耕的领域标签。</div>`;
+  }
+
+  // General encouragement if sparse
+  if (relevantEntries.length < 3) {
+    html += `<div class="summary-point">相关记录还比较少，持续记录后会产生更丰富的洞察。</div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function findThematicClusters(entries) {
+  // Group entries by keyword co-occurrence
+  const clusters = [];
+  const kwSets = entries.map(e => new Set(extractKeywords(e.content)));
+
+  // Find pairs of entries with high overlap
+  const seen = new Set();
+  for (let i = 0; i < entries.length && clusters.length < 3; i++) {
+    if (seen.has(i)) continue;
+    const group = [i];
+    for (let j = i + 1; j < entries.length; j++) {
+      if (seen.has(j)) continue;
+      const overlap = [...kwSets[i]].filter(w => kwSets[j].has(w));
+      if (overlap.length >= 3) {
+        group.push(j);
+        seen.add(j);
+      }
+    }
+    if (group.length >= 2) {
+      seen.add(i);
+      const sharedKW = [...kwSets[group[0]]].filter(w =>
+        group.every(idx => kwSets[idx].has(w))
+      ).slice(0, 3);
+      if (sharedKW.length > 0) {
+        clusters.push(`你有 <strong>${group.length}</strong> 条记录围绕「<strong>${sharedKW.join('、')}</strong>」展开，形成了一个小的思考集群。`);
+      }
+    }
+  }
+  return clusters;
+}
+
+function closeAnswer() {
+  document.getElementById('answerContainer').innerHTML = '';
+  // Remove any highlights
+  document.querySelectorAll('.entry-card.highlighted').forEach(el => el.classList.remove('highlighted'));
+}
+
+// ---- Keyword Extraction (shared) ----
 function extractKeywords(text) {
-  // Simple Chinese + English keyword extraction
-  // Remove common stop words, extract meaningful segments
-  const cleaned = text
-    .replace(/https?:\/\/\S+/g, '')
-    .replace(/[^\u4e00-\u9fff\w]+/g, ' ')
-    .toLowerCase();
-
-  // For Chinese: extract 2-4 char segments that appear meaningful
+  const cleaned = text.replace(/https?:\/\/\S+/g, '').replace(/[^\u4e00-\u9fff\w]+/g, ' ').toLowerCase();
   const chineseMatches = text.match(/[\u4e00-\u9fff]{2,6}/g) || [];
-  // For English: extract words > 2 chars
   const englishMatches = cleaned.match(/[a-z]{3,}/g) || [];
-
-  // Filter out common stop words
   const stopWords = new Set([
-    '的', '了', '是', '在', '我', '有', '和', '就', '不', '人', '都', '一', '一个',
-    '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好',
-    '这', '他', '她', '它', '们', '那', '个', '来', '但', '而', '与', '或', '等',
-    '这个', '那个', '什么', '怎么', '可以', '因为', '所以', '如果', '虽然', '但是',
-    'the', 'and', 'for', 'that', 'this', 'with', 'are', 'was', 'not', 'but', 'have',
-    'from', 'they', 'been', 'has', 'its', 'will', 'can', 'would', 'could', 'should',
+    '的','了','是','在','我','有','和','就','不','人','都','一','一个',
+    '上','也','很','到','说','要','去','你','会','着','没有','看','好',
+    '这','他','她','它','们','那','个','来','但','而','与','或','等',
+    '这个','那个','什么','怎么','可以','因为','所以','如果','虽然','但是',
+    '还是','已经','一下','比较','这样','那样','关于','或者','以及',
+    'the','and','for','that','this','with','are','was','not','but','have',
+    'from','they','been','has','its','will','can','would','could','should',
   ]);
-
-  const keywords = [...chineseMatches, ...englishMatches].filter(w => !stopWords.has(w));
-  // Deduplicate
-  return [...new Set(keywords)];
+  return [...new Set([...chineseMatches, ...englishMatches].filter(w => !stopWords.has(w)))];
 }
 
 // ---- Load Entries ----
@@ -668,10 +1075,11 @@ async function loadEntries() {
     const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=50`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     entries = await res.json();
-    cachedEntries = entries.slice(0, 30); // update cache
+    cachedEntries = entries.slice(0, 30);
+    allEntries = entries; // also use for Q&A
     renderEntries();
     setOnline(true);
-  } catch (err) {
+  } catch {
     listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败<br>请检查网络连接</div></div>';
     setOnline(false);
   }
@@ -682,29 +1090,17 @@ function renderEntries() {
   const counterEl = document.getElementById('counter');
   if (entries.length === 0) {
     listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-text">还没有记录<br>去「记录」页写下第一条</div></div>';
-    counterEl.textContent = '';
-    return;
+    counterEl.textContent = ''; return;
   }
   counterEl.textContent = `共 ${entries.length} 条记录`;
-
-  const typeLabels = {};
-  CATEGORIES.forEach(c => typeLabels[c.id] = c.label);
-
   listEl.innerHTML = entries.map(e => {
     const date = new Date(e.created_at);
     const timeStr = formatTime(date);
     const primaryBadge = `<span class="entry-type-badge ${e.type}">${typeLabels[e.type] || e.type}</span>`;
     const typeLabelSet = new Set(Object.values(typeLabels));
-    const extraBadges = (e.tags || [])
-      .filter(t => typeLabelSet.has(t) && t !== typeLabels[e.type])
-      .map(t => {
-        const cat = CATEGORIES.find(c => c.label === t);
-        return cat ? `<span class="entry-type-badge ${cat.id}">${t}</span>` : '';
-      }).join('');
-    const normalTags = (e.tags || [])
-      .filter(t => !typeLabelSet.has(t))
-      .map(t => `<span class="entry-tag">#${t}</span>`).join('');
-
+    const extraBadges = (e.tags || []).filter(t => typeLabelSet.has(t) && t !== typeLabels[e.type])
+      .map(t => { const cat = CATEGORIES.find(c => c.label === t); return cat ? `<span class="entry-type-badge ${cat.id}">${t}</span>` : ''; }).join('');
+    const normalTags = (e.tags || []).filter(t => !typeLabelSet.has(t)).map(t => `<span class="entry-tag">#${t}</span>`).join('');
     return `
       <div class="entry-card" data-id="${e.id}">
         <div class="entry-header">
@@ -727,17 +1123,14 @@ async function deleteEntry(id) {
     await fetch(`${API_BASE}/entries?id=eq.${id}`, { method: 'DELETE', headers });
     entries = entries.filter(e => e.id !== id);
     cachedEntries = cachedEntries.filter(e => e.id !== id);
-    renderEntries();
-    showToast('已删除');
+    allEntries = allEntries.filter(e => e.id !== id);
+    renderEntries(); showToast('已删除');
   } catch { showToast('删除失败'); }
 }
 
 // ---- Health ----
 async function checkHealth() {
-  try {
-    const r = await fetch(`${API_BASE}/entries?select=id&limit=1`, { headers });
-    setOnline(r.ok);
-  } catch { setOnline(false); }
+  try { const r = await fetch(`${API_BASE}/entries?select=id&limit=1`, { headers }); setOnline(r.ok); } catch { setOnline(false); }
 }
 function setOnline(s) {
   const d = document.getElementById('statusDot');
@@ -771,21 +1164,20 @@ contentInput.addEventListener('keydown', e => {
 contentInput.addEventListener('input', function() {
   this.style.height = 'auto';
   this.style.height = Math.min(this.scrollHeight, window.innerHeight*0.4) + 'px';
-  // Debounce AI classification
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(onContentChange, 400);
 });
 
+// Ask input events
+document.getElementById('askInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); handleAsk(); }
+});
+
 // ---- Init ----
 window.addEventListener('DOMContentLoaded', () => {
-  renderComposeChips();
-  updateIndicator();
-  checkHealth();
-  // Pre-load entries for insight analysis
+  renderComposeChips(); updateIndicator(); checkHealth();
   fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers })
-    .then(r => r.ok ? r.json() : [])
-    .then(data => { cachedEntries = data; })
-    .catch(() => {});
+    .then(r => r.ok ? r.json() : []).then(data => { cachedEntries = data; }).catch(() => {});
 });
 setInterval(checkHealth, 30000);
 </script>
