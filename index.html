@@ -691,11 +691,14 @@ async function handleSubmit() {
 
 // ---- URL Extraction ----
 function extractUrls(text) {
-  const urlRegex = /https?:\/\/[^\s<>"\u4e00-\u9fff]+/gi;
-  const matches = text.match(urlRegex) || [];
+  // 排除中文字符、中文标点、全角字符、emoji 等非 URL 字符
+  const urlRegex = /https?:\/\/[^\s<>"\u4e00-\u9fff\uff00-\uffef\u3000-\u303f\u2000-\u206f\u{1F300}-\u{1FAFF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]+/giu;
+  const matches = (text.match(urlRegex) || []).map(u => u.replace(/[,;:!?)\]】）。！？，、；：]+$/, ''));
   // Also detect short links like xhslink.com/xxx
-  const shortRegex = /(?:xhslink\.com|b23\.tv|t\.cn|dwz\.cn|youtu\.be)\/[^\s<>"]+/gi;
-  const shortMatches = (text.match(shortRegex) || []).map(u => u.startsWith('http') ? u : 'https://' + u);
+  const shortRegex = /(?:xhslink\.com|b23\.tv|t\.cn|dwz\.cn|youtu\.be)\/[^\s<>"\u4e00-\u9fff\uff00-\uffef\u3000-\u303f]+/gi;
+  const shortMatches = (text.match(shortRegex) || [])
+    .map(u => u.replace(/[,;:!?)\]】）。！？，、；：]+$/, ''))
+    .map(u => u.startsWith('http') ? u : 'https://' + u);
   return [...new Set([...matches, ...shortMatches])];
 }
 
@@ -838,8 +841,12 @@ async function fetchFromParserAPI(url) {
 
       // 检测"有结构但无实质内容"的情况（后端反爬拿到空壳数据）
       const FALLBACK_TITLES = ['小红书笔记', '未获取到标题', ''];
-      const hasRealTitle = data.title && !FALLBACK_TITLES.includes(data.title);
-      const hasRealSummary = data.summary && data.summary.length > 2;
+      const ERROR_PATTERNS = ['页面不见了', '页面不存在', '404', '访问受限', '请在app内打开', '需要验证', '登录'];
+      const hasRealTitle = data.title && !FALLBACK_TITLES.includes(data.title)
+        && !ERROR_PATTERNS.some(p => (data.title || '').includes(p));
+      const hasRealSummary = data.summary && data.summary.length > 2
+        && !ERROR_PATTERNS.some(p => (data.summary || '').includes(p))
+        && !/沪ICP备|营业执照|网信算备/.test(data.summary || '');
       const hasRealAuthor = data.author && data.author !== '未知' && data.author !== '';
       if (!hasRealTitle && !hasRealSummary && !hasRealAuthor) continue; // 视为失败，尝试下一个
 
