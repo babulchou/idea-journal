@@ -658,20 +658,71 @@ function identifyPlatform(url) {
   try { return { name: new URL(url).hostname.replace('www.', ''), icon: '🔗' }; } catch { return { name: '网页', icon: '🔗' }; }
 }
 
-// ---- Fetch Link Content via CORS proxy ----
+// ---- Link Parser API ----
+const LINK_PARSER_API = 'https://link-parser-api.onrender.com'; // 部署后的地址
+const LINK_PARSER_LOCAL = 'http://localhost:8900'; // 本地调试
+
 async function fetchLinkContent(url) {
-  // Try multiple CORS proxies for reliability
+  // 1. 先尝试自建 API（服务端 httpx 抓取，支持小红书/B站/YouTube等）
+  const apiResult = await fetchFromParserAPI(url);
+  if (apiResult) return apiResult;
+
+  // 2. 降级：CORS proxy（对普通网页可能有效）
+  const proxyResult = await fetchFromCorsProxy(url);
+  if (proxyResult) return proxyResult;
+
+  return null;
+}
+
+async function fetchFromParserAPI(url) {
+  // 尝试远程 API，然后本地
+  const endpoints = [LINK_PARSER_API, LINK_PARSER_LOCAL];
+  for (const base of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 18000);
+      const res = await fetch(`${base}/parse?url=${encodeURIComponent(url)}`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.error) continue;
+
+      // 转换为前端统一格式
+      const platform = data.platform || identifyPlatform(url);
+      const keywords = extractKeywords(`${data.title || ''} ${data.summary || ''}`).slice(0, 5);
+      return {
+        title: data.title || '',
+        description: data.summary || '',
+        bodyText: data.summary || '',
+        summary: {
+          title: data.title || '未获取到标题',
+          platform,
+          text: data.summary || '',
+          keywords,
+          author: data.author || '',
+          extraInfo: data.extra_info || '',
+          contentType: data.content_type || '',
+        },
+      };
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+async function fetchFromCorsProxy(url) {
   const proxies = [
     u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
     u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-    u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
   ];
-
   for (const makeProxy of proxies) {
     try {
       const proxyUrl = makeProxy(url);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const res = await fetch(proxyUrl, {
         signal: controller.signal,
         headers: { 'Accept': 'text/html,application/xhtml+xml,*/*' }
@@ -681,101 +732,49 @@ async function fetchLinkContent(url) {
       const html = await res.text();
       if (html.length < 100) continue;
       return parseHtmlContent(html, url);
-    } catch {
-      continue;
-    }
+    } catch { continue; }
   }
   return null;
 }
 
-// ---- Parse HTML and extract meaningful content ----
 function parseHtmlContent(html, url) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-
-  // Extract title
   let title = '';
   const ogTitle = doc.querySelector('meta[property="og:title"]');
   const twitterTitle = doc.querySelector('meta[name="twitter:title"]');
   const titleTag = doc.querySelector('title');
-  title = ogTitle?.content || twitterTitle?.content || titleTag?.textContent || '';
-  title = title.trim();
+  title = (ogTitle?.content || twitterTitle?.content || titleTag?.textContent || '').trim();
 
-  // Extract description
   let description = '';
   const ogDesc = doc.querySelector('meta[property="og:description"]');
   const twitterDesc = doc.querySelector('meta[name="twitter:description"]');
   const metaDesc = doc.querySelector('meta[name="description"]');
-  description = ogDesc?.content || twitterDesc?.content || metaDesc?.content || '';
-  description = description.trim();
+  description = (ogDesc?.content || twitterDesc?.content || metaDesc?.content || '').trim();
 
-  // Extract main text content
-  // Remove script, style, nav, footer, header, aside elements
   ['script','style','nav','footer','header','aside','iframe','noscript','svg'].forEach(tag => {
     doc.querySelectorAll(tag).forEach(el => el.remove());
   });
-
-  // Try article or main content first
   let bodyText = '';
-  const article = doc.querySelector('article') || doc.querySelector('[role="main"]') || doc.querySelector('.article-content') || doc.querySelector('.post-content') || doc.querySelector('.content');
-  if (article) {
-    bodyText = article.textContent;
-  } else {
-    bodyText = doc.body?.textContent || '';
-  }
-
-  // Clean up the text
+  const article = doc.querySelector('article') || doc.querySelector('[role="main"]') || doc.querySelector('.content');
+  bodyText = (article || doc.body)?.textContent || '';
   bodyText = bodyText.replace(/\s+/g, ' ').trim();
+  if (bodyText.length > 2000) bodyText = bodyText.substring(0, 2000);
 
-  // For very long texts, take a reasonable chunk
-  if (bodyText.length > 3000) bodyText = bodyText.substring(0, 3000);
-
-  // Generate a summary from the extracted content
-  const summary = generateLinkSummary(title, description, bodyText, url);
-
-  return { title, description, bodyText, summary };
-}
-
-// ---- Generate link summary from extracted content ----
-function generateLinkSummary(title, description, bodyText, url) {
   const platform = identifyPlatform(url);
-
-  // Combine all text sources for analysis
-  const allText = `${title} ${description} ${bodyText}`.toLowerCase();
-  const keywords = extractKeywords(`${title} ${description} ${bodyText}`);
-  const topKW = keywords.slice(0, 8);
-
+  const keywords = extractKeywords(`${title} ${description} ${bodyText}`).slice(0, 5);
   let summary = '';
-
-  // Use description as primary summary if it's good enough
   if (description && description.length > 30) {
-    summary = description;
-    if (summary.length > 200) summary = summary.substring(0, 200) + '...';
+    summary = description.length > 300 ? description.substring(0, 300) + '...' : description;
   } else if (bodyText.length > 50) {
-    // Extract the first meaningful sentences
     const sentences = bodyText.match(/[^。！？.!?\n]+[。！？.!?\n]?/g) || [];
-    const meaningful = sentences.filter(s => s.trim().length > 10).slice(0, 4);
-    summary = meaningful.join('').trim();
+    summary = sentences.filter(s => s.trim().length > 10).slice(0, 4).join('').trim();
     if (summary.length > 300) summary = summary.substring(0, 300) + '...';
     if (summary.length < 20) summary = bodyText.substring(0, 200) + '...';
-  } else if (description) {
-    summary = description;
-  }
-
-  if (!summary && title) {
-    summary = `来自${platform.name}的内容：${title}`;
-  }
-
-  if (!summary) {
-    return null;
-  }
-
-  return {
-    title: title || '未获取到标题',
-    platform,
-    text: summary,
-    keywords: topKW.slice(0, 5),
-  };
+  } else if (description) { summary = description; }
+  if (!summary && title) summary = `来自${platform.name}的内容：${title}`;
+  if (!summary) return null;
+  return { title, description, bodyText, summary: { title: title || '未获取到标题', platform, text: summary, keywords } };
 }
 
 // ---- Insight with Link Summary ----
@@ -818,12 +817,17 @@ async function generateInsightWithLink(savedEntry, url) {
       <div class="insight-link-summary">
         <div class="ils-label">${s.platform.icon} ${s.platform.name}内容摘要</div>
         ${s.title ? `<div class="ils-title">${escapeHtml(s.title)}</div>` : ''}
+        ${s.extraInfo ? `<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">${escapeHtml(s.extraInfo)}</div>` : ''}
+        ${s.author && !s.extraInfo ? `<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">👤 ${escapeHtml(s.author)}</div>` : ''}
         <div class="ils-text">${escapeHtml(s.text)}</div>
-        ${s.keywords.length > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--text-tertiary);">关键词：${s.keywords.map(k=>'<strong style="color:var(--teal);">'+escapeHtml(k)+'</strong>').join('、')}</div>` : ''}
+        ${s.keywords && s.keywords.length > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--text-tertiary);">关键词：${s.keywords.map(k=>'<strong style="color:var(--teal);">'+escapeHtml(k)+'</strong>').join('、')}</div>` : ''}
       </div>`;
 
     // Store summary to database asynchronously
-    saveLinkSummary(savedEntry.id, { url, title: s.title, platform: s.platform.name, text: s.text, keywords: s.keywords });
+    saveLinkSummary(savedEntry.id, {
+      url, title: s.title, platform: s.platform.name, text: s.text,
+      keywords: s.keywords || [], author: s.author || '', extra_info: s.extraInfo || '',
+    });
   } else {
     linkHtml = `
       <div class="insight-link-summary">
@@ -1484,6 +1488,8 @@ function renderEntries() {
         <div class="link-summary-body" data-entry-id="${e.id}">
           <div class="ls-title">${escapeHtml(ls.title)}</div>
           <div class="ls-source">${plat.icon} 来源：${escapeHtml(ls.platform || plat.name)}</div>
+          ${ls.author ? `<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">👤 ${escapeHtml(ls.author)}</div>` : ''}
+          ${ls.extra_info ? `<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">${escapeHtml(ls.extra_info)}</div>` : ''}
           <div class="ls-text">${escapeHtml(ls.text)}</div>
           ${ls.keywords && ls.keywords.length > 0 ? `<div style="margin-top:8px;font-size:12px;color:var(--text-tertiary);">关键词：${ls.keywords.map(k => '<span style="color:var(--teal);">'+escapeHtml(k)+'</span>').join('、')}</div>` : ''}
         </div>`;
