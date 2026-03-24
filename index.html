@@ -748,6 +748,13 @@ async function fetchFromParserAPI(url) {
       const data = await res.json();
       if (data.error) continue;
 
+      // 检测"有结构但无实质内容"的情况（后端反爬拿到空壳数据）
+      const FALLBACK_TITLES = ['小红书笔记', '未获取到标题', ''];
+      const hasRealTitle = data.title && !FALLBACK_TITLES.includes(data.title);
+      const hasRealSummary = data.summary && data.summary.length > 2;
+      const hasRealAuthor = data.author && data.author !== '未知' && data.author !== '';
+      if (!hasRealTitle && !hasRealSummary && !hasRealAuthor) continue; // 视为失败，尝试下一个
+
       // 转换为前端统一格式
       const platform = data.platform || identifyPlatform(url);
       const keywords = extractKeywords(`${data.title || ''} ${data.summary || ''}`).slice(0, 5);
@@ -871,7 +878,7 @@ async function generateInsightWithLink(savedEntry, url) {
 
   // ========== BUILD RESULT CARD ==========
 
-  if (linkData && linkData.summary) {
+  if (linkData && linkData.summary && linkData.summary.text && linkData.summary.text.length > 2) {
     // SUCCESS: Link content is the MAIN feedback
     const s = linkData.summary;
     const displayPlatform = s.platform || platform;
