@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="随手记">
+<meta name="apple-mobile-web-app-title" content="脑瓜子">
 <meta name="theme-color" content="#000000">
-<title>随手记</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
+<title>脑瓜子 Buzzy</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -687,6 +688,69 @@
     transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
   }
 
+  /* ---- Auth Screen ---- */
+  .auth-screen {
+    position: fixed; inset: 0; z-index: 9999; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .auth-screen.hidden { display: none; }
+  .auth-card {
+    width: 100%; max-width: 380px;
+    background: var(--card-solid); border-radius: 24px; padding: 40px 28px;
+    border: 1px solid var(--border);
+  }
+  .auth-logo { text-align: center; font-size: 52px; margin-bottom: 8px; }
+  .auth-title { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .auth-subtitle { text-align: center; font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
+  .auth-input {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    color: var(--text); font-size: 16px; outline: none; font-family: inherit;
+    margin-bottom: 12px; transition: border-color 0.2s;
+  }
+  .auth-input:focus { border-color: rgba(10,132,255,0.5); }
+  .auth-input::placeholder { color: var(--text-tertiary); }
+  .auth-btn {
+    width: 100%; padding: 14px; border-radius: 12px; border: none;
+    background: var(--accent); color: white; font-size: 16px; font-weight: 600;
+    cursor: pointer; margin-top: 8px; transition: opacity 0.2s;
+  }
+  .auth-btn:active { opacity: 0.8; }
+  .auth-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .auth-switch {
+    text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-secondary);
+  }
+  .auth-switch a {
+    color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 500;
+  }
+  .auth-error {
+    background: rgba(255,55,95,0.1); border: 1px solid rgba(255,55,95,0.2);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+    font-size: 13px; color: var(--pink); display: none;
+  }
+  .auth-error.show { display: block; }
+  .auth-divider {
+    display: flex; align-items: center; gap: 12px; margin: 20px 0;
+    color: var(--text-tertiary); font-size: 12px;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .auth-user-bar {
+    display: flex; align-items: center; gap: 8px; padding: 0 4px;
+  }
+  .auth-user-email {
+    font-size: 12px; color: var(--text-secondary); max-width: 120px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .auth-logout-btn {
+    background: none; border: none; color: var(--text-tertiary);
+    font-size: 12px; cursor: pointer; padding: 2px 6px; border-radius: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .auth-logout-btn:hover { color: var(--pink); }
+
   @media (min-width: 481px) {
     .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
   }
@@ -695,10 +759,30 @@
 </head>
 <body>
 
-<div class="app">
+<!-- Auth Screen -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🐝</div>
+    <div class="auth-title">脑瓜子</div>
+    <div class="auth-subtitle" id="authSubtitle">登录以同步你的想法</div>
+    <div class="auth-error" id="authError"></div>
+    <input class="auth-input" id="authEmail" type="email" placeholder="邮箱" autocomplete="email">
+    <input class="auth-input" id="authPassword" type="password" placeholder="密码（至少6位）" autocomplete="current-password">
+    <button class="auth-btn" id="authBtn" onclick="handleAuth()">登 录</button>
+    <div class="auth-switch" id="authSwitch">
+      还没有账号？<a onclick="toggleAuthMode()">注册</a>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none;">
   <header class="header">
-    <h1>随手记</h1>
+    <h1>🐝 脑瓜子</h1>
     <div class="header-actions">
+      <div class="auth-user-bar" id="userBar">
+        <span class="auth-user-email" id="userEmail"></span>
+        <button class="auth-logout-btn" onclick="handleLogout()" title="退出登录">退出</button>
+      </div>
       <div class="status-dot" id="statusDot" title="数据库连接状态"></div>
       <button class="icon-btn" onclick="loadEntries()" title="刷新">↻</button>
     </div>
@@ -787,10 +871,151 @@
 const SUPABASE_URL = 'https://dbduutzsoynmhbfazpxu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZHV1dHpzb3lubWhiZmF6cHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzU3NDIsImV4cCI6MjA4OTg1MTc0Mn0.lTrhFI7KlhbYQlvyCJ-n-MIPR9uRJ3nW44tE2CNRCW8';
 const API_BASE = `${SUPABASE_URL}/rest/v1`;
-const headers = {
-  'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
-  'Content-Type': 'application/json', 'Prefer': 'return=representation'
-};
+
+// ---- Supabase Client (Auth) ----
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+let currentSession = null;
+
+// Dynamic headers — uses user's access_token when logged in
+let headers = {};
+function updateHeaders() {
+  const token = currentSession?.access_token || SUPABASE_KEY;
+  headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+}
+updateHeaders(); // initial with anon key
+
+// ---- Auth UI Logic ----
+let isSignUpMode = false;
+
+function toggleAuthMode() {
+  isSignUpMode = !isSignUpMode;
+  document.getElementById('authSubtitle').textContent = isSignUpMode ? '创建账号，开始记录' : '登录以同步你的想法';
+  document.getElementById('authBtn').textContent = isSignUpMode ? '注 册' : '登 录';
+  document.getElementById('authSwitch').innerHTML = isSignUpMode
+    ? '已有账号？<a onclick="toggleAuthMode()">登录</a>'
+    : '还没有账号？<a onclick="toggleAuthMode()">注册</a>';
+  document.getElementById('authError').classList.remove('show');
+  document.getElementById('authPassword').setAttribute('autocomplete', isSignUpMode ? 'new-password' : 'current-password');
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function handleAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const btn = document.getElementById('authBtn');
+
+  if (!email || !password) { showAuthError('请输入邮箱和密码'); return; }
+  if (password.length < 6) { showAuthError('密码至少 6 位'); return; }
+
+  btn.disabled = true;
+  btn.textContent = isSignUpMode ? '注册中...' : '登录中...';
+  document.getElementById('authError').classList.remove('show');
+
+  try {
+    let result;
+    if (isSignUpMode) {
+      result = await sb.auth.signUp({ email, password });
+      if (result.error) throw result.error;
+      // 检查是否需要确认邮箱
+      if (result.data?.user?.identities?.length === 0) {
+        showAuthError('该邮箱已被注册');
+        btn.disabled = false;
+        btn.textContent = '注 册';
+        return;
+      }
+      if (result.data?.user && !result.data.session) {
+        // 需要邮箱确认
+        showAuthError('注册成功！请检查邮箱完成确认后再登录。');
+        btn.disabled = false;
+        btn.textContent = '注 册';
+        isSignUpMode = false;
+        toggleAuthMode(); // 切到登录模式
+        return;
+      }
+    } else {
+      result = await sb.auth.signInWithPassword({ email, password });
+      if (result.error) throw result.error;
+    }
+
+    // 登录/注册成功，onAuthStateChange 会处理 UI 切换
+  } catch (err) {
+    const msg = err.message || '操作失败';
+    const translated = msg.includes('Invalid login') ? '邮箱或密码错误'
+      : msg.includes('Email not confirmed') ? '请先确认邮箱'
+      : msg.includes('already registered') ? '该邮箱已被注册'
+      : msg.includes('rate limit') ? '操作太频繁，请稍后再试'
+      : msg;
+    showAuthError(translated);
+    btn.disabled = false;
+    btn.textContent = isSignUpMode ? '注 册' : '登 录';
+  }
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  // onAuthStateChange 会处理 UI 切换
+}
+
+function showMainApp(user) {
+  currentUser = user;
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('mainApp').style.display = '';
+  // 显示用户邮箱
+  const emailEl = document.getElementById('userEmail');
+  emailEl.textContent = user.email;
+  emailEl.title = user.email;
+  // 初始化应用
+  initApp();
+}
+
+function showAuthScreen() {
+  currentUser = null;
+  currentSession = null;
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('mainApp').style.display = 'none';
+  // 重置 auth form
+  const btn = document.getElementById('authBtn');
+  btn.disabled = false;
+  btn.textContent = isSignUpMode ? '注 册' : '登 录';
+}
+
+// Listen for auth state changes
+sb.auth.onAuthStateChange((event, session) => {
+  currentSession = session;
+  updateHeaders();
+  if (session?.user) {
+    showMainApp(session.user);
+  } else {
+    showAuthScreen();
+  }
+});
+
+// Check initial session on load
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  currentSession = session;
+  updateHeaders();
+  if (session?.user) {
+    showMainApp(session.user);
+  } else {
+    showAuthScreen();
+  }
+})();
+
+// Enter key on auth inputs
+document.getElementById('authEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
+document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
 
 const CATEGORIES = [
   { id: 'thought', emoji: '💭', label: '想法' },
@@ -945,7 +1170,7 @@ async function handleSubmit() {
   // Extract URLs from content
   const detectedUrls = extractUrls(content);
   _lastRawInputText = detectedUrls.length > 0 ? content : ''; // 记录原始文本用于前端预解析
-  const entry = { title, content, type: primaryType, tags: allTags, urls: detectedUrls, source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑' };
+  const entry = { title, content, type: primaryType, tags: allTags, urls: detectedUrls, source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? '手机' : '电脑', user_id: currentUser?.id };
   try {
     const res = await fetch(`${API_BASE}/entries`, { method: 'POST', headers, body: JSON.stringify(entry) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2728,13 +2953,24 @@ document.getElementById('askInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); handleAsk(); }
 });
 
-// ---- Init ----
-window.addEventListener('DOMContentLoaded', () => {
+// ---- Init (called after login) ----
+let _appInitialized = false;
+let _healthInterval = null;
+function initApp() {
+  if (_appInitialized) {
+    // Already initialized, just refresh data
+    checkHealth();
+    entries = []; allEntries = []; cachedEntries = [];
+    fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers })
+      .then(r => r.ok ? r.json() : []).then(data => { cachedEntries = data; loadTodoEntries(); }).catch(() => {});
+    return;
+  }
+  _appInitialized = true;
   renderComposeChips(); updateIndicator(); checkHealth();
   fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers })
     .then(r => r.ok ? r.json() : []).then(data => { cachedEntries = data; loadTodoEntries(); }).catch(() => {});
-});
-setInterval(checkHealth, 30000);
+  _healthInterval = setInterval(checkHealth, 30000);
+}
 </script>
 </body>
 </html>

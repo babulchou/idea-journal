@@ -1,4 +1,4 @@
-# 💡 随手记 — ADHD 友好的外脑
+# 🐝 脑瓜子 Buzzy — ADHD 友好的外脑
 
 > **想法冒出来的时候，打开，写下，完事。**
 > 
@@ -7,6 +7,8 @@
 [![在线体验](https://img.shields.io/badge/🚀_在线体验-打开就用-blue?style=for-the-badge)](https://babulchou.github.io/idea-journal/)
 [![PWA](https://img.shields.io/badge/PWA-可装主屏-green?style=flat-square)](https://babulchou.github.io/idea-journal/)
 [![GitHub Pages](https://img.shields.io/badge/部署-GitHub_Pages-222?style=flat-square&logo=github)](https://github.com/babulchou/idea-journal)
+
+[English](#-buzzy--an-adhd-friendly-external-brain) | 中文
 
 ---
 
@@ -20,7 +22,7 @@
 
 😩 **知道自己该记下来，但每次打开笔记软件都觉得好重。** 要建文件夹、要选标签、要想标题……算了不记了。
 
-**随手记就是为你做的。**
+**脑瓜子就是为你做的。**
 
 它不是 Notion，不是 Obsidian，不追求体系化管理。它只做一件事：**让你 1 秒把脑子里的东西倒出来，剩下的全部交给它。**
 
@@ -79,7 +81,7 @@
 
 ---
 
-## 🛠️ 技术细节（给好奇的人）
+## 🛠️ 技术细节
 
 - **单文件前端** — 一个 `index.html` 搞定，没有构建、没有框架、没有 node_modules
 - **PWA 支持** — 装到主屏，离线可用
@@ -120,6 +122,132 @@
 
 ---
 
+---
+
+# 🐝 Buzzy — An ADHD-Friendly External Brain
+
+> **When a thought pops up — open, type, done.**
+>
+> No categories to pick. No titles to write. No organizing ever.
+
+[![Try it](https://img.shields.io/badge/🚀_Try_it-Live_Demo-blue?style=for-the-badge)](https://babulchou.github.io/idea-journal/)
+[![PWA](https://img.shields.io/badge/PWA-Installable-green?style=flat-square)](https://babulchou.github.io/idea-journal/)
+
+[中文](#-脑瓜子-buzzy--adhd-友好的外脑) | English
+
+---
+
+## Who is this for?
+
+Does this sound like you?
+
+🧠 **Your brain never shuts up.** Ideas pop up while walking, showering, sitting in meetings.
+
+📱 **But you never organize anything.** Your notes app has one line from 3 months ago. Your chat-with-self is a graveyard of random thoughts you'll never find again.
+
+😩 **Every note-taking app feels too heavy.** Folders? Tags? Templates? You just wanted to write one sentence.
+
+**Buzzy is built for you.**
+
+It's not Notion. It's not Obsidian. It doesn't try to be a "system." It does one thing: **lets you dump what's in your head in 1 second. It handles the rest.**
+
+---
+
+## ✨ What it does
+
+### 📝 Open and write
+No splash screen, no onboarding. Open → type → send. Like texting yourself.
+
+### 🤖 AI auto-categorization
+Just write. Buzzy figures out if it's a **thought**, **inspiration**, **todo**, **link**, **quote**, or **product idea**. Zero effort from you.
+
+### 🔗 Paste a link, done
+See something interesting on social media? Paste the link — Buzzy auto-extracts the title and summary. No more "save for later" (that you never read).
+
+### ⚡ Inspiration collision
+After each entry, AI finds connections across your entire history. You write "want to build a reading tool" and it reminds you of that note from 3 months ago: "I always forget to highlight when reading." The more you write, the better it gets.
+
+### 🔍 AI-powered review
+Ask "What have I been thinking about lately?" or "What product ideas did I have last week?" — AI summarizes from all your records, with clickable references that jump to the original entry.
+
+### ✅ One-line todos
+Write "meeting tomorrow" and it's auto-detected as a todo. Dedicated panel, checkbox to complete.
+
+---
+
+## 📱 How to use
+
+**Zero download. Zero signup. Zero config.**
+
+👉 **https://babulchou.github.io/idea-journal/**
+
+Open in your phone's browser. For the full experience, **Add to Home Screen** — it runs fullscreen like a native app.
+
+> iOS: Safari → Share → Add to Home Screen
+> Android: Chrome → Menu → Add to Home Screen
+
+Works great on desktop too.
+
+---
+
+## 🧩 Design philosophy
+
+> **The barrier to capture a thought should be zero.**
+
+Most note apps chase "powerful." But ADHD brains don't need powerful — they need **effortless**.
+
+- **No titles** — ideas don't have titles
+- **No folders** — thoughts don't have boundaries
+- **No manual categories** — AI is faster than you
+- **No organizing** — AI summarizes when you review
+- **No login required** — just write (sign up later if you want sync)
+
+Your only job: **get it out of your head.**
+
+---
+
+## 🛠️ Tech stack
+
+- **Single-file frontend** — one `index.html`, no build step, no framework, no node_modules
+- **PWA** — installable, works offline
+- **Supabase** — cloud sync across devices
+- **AI** — GLM-4-Flash (free) for categorization, inspiration, and review
+- **Backend** — Python FastAPI on Render (free tier)
+
+| Component | Stack | Hosting |
+|-----------|-------|---------|
+| Frontend | Vanilla HTML/CSS/JS + Supabase SDK | GitHub Pages |
+| Backend | Python FastAPI + GLM-4-Flash | Render |
+| Database | Supabase (PostgreSQL) | Supabase Cloud |
+
+Backend repo: [link-parser-api](https://github.com/babulchou/link-parser-api)
+
+---
+
+## 🚀 Self-host
+
+```bash
+# 1. Fork this repo
+# 2. Enable GitHub Pages (Settings → Pages → main branch)
+# 3. Create a Supabase project and set up tables
+# 4. Update SUPABASE_URL and SUPABASE_ANON_KEY in index.html
+# 5. Done
+```
+
+AI features (link parsing, inspiration, AI review) require deploying [link-parser-api](https://github.com/babulchou/link-parser-api) separately. Core recording works without it.
+
+---
+
+## 🤝 Contributing
+
+Issues and PRs welcome! Especially:
+- 🐛 Bug reports
+- 💡 Feature ideas
+- 🌍 i18n / translations
+- 📱 UI/UX improvements
+
+---
+
 ## 📜 License
 
 MIT
@@ -129,7 +257,9 @@ MIT
 <p align="center">
   <strong>如果你也是那种"想法很多但从来不记"的人，试试看。</strong>
   <br>
-  <strong>觉得有用的话，点个 ⭐</strong>
+  <strong>If you're the type who has a million ideas but never writes them down — give it a try.</strong>
+  <br>
+  <strong>觉得有用？点个 ⭐ / Found it useful? Drop a ⭐</strong>
   <br><br>
-  Made with 💡 by <a href="https://github.com/babulchou">@babulchou</a>
+  Made with 🐝 by <a href="https://github.com/babulchou">@babulchou</a>
 </p>
