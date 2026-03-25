@@ -517,6 +517,150 @@
 
   .counter { padding: 4px 20px 0; font-size: 13px; color: var(--text-tertiary); }
 
+  /* ---- Todo Hub Entry Card (in Review page) ---- */
+  .todo-hub-card {
+    margin: 12px 20px 4px; padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(48,209,88,0.08), rgba(48,209,88,0.02));
+    border: 1px solid rgba(48,209,88,0.15); border-radius: 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s;
+  }
+  .todo-hub-card:active { transform: scale(0.98); }
+  .todo-hub-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(48,209,88,0.15); display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .todo-hub-info { flex: 1; min-width: 0; }
+  .todo-hub-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .todo-hub-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .todo-hub-badge {
+    background: var(--green); color: #000; font-size: 13px; font-weight: 700;
+    min-width: 24px; height: 24px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; padding: 0 7px;
+  }
+  .todo-hub-badge.empty { background: var(--text-tertiary); }
+  .todo-hub-arrow { color: var(--text-tertiary); font-size: 16px; margin-left: 4px; }
+
+  /* ---- Todo Panel (Full-screen overlay) ---- */
+  .todo-panel {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg); z-index: 200;
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .todo-panel.open { transform: translateX(0); }
+  .todo-panel-header {
+    padding: calc(var(--safe-top) + 12px) 20px 12px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .todo-back-btn {
+    background: none; border: none; color: var(--accent); font-size: 24px;
+    cursor: pointer; padding: 4px; -webkit-tap-highlight-color: transparent;
+    display: flex; align-items: center;
+  }
+  .todo-panel-title { font-size: 20px; font-weight: 700; flex: 1; }
+  .todo-panel-count { font-size: 13px; color: var(--text-secondary); }
+
+  /* Todo Filter Tabs */
+  .todo-filter-tabs {
+    display: flex; padding: 12px 20px 0; gap: 8px;
+  }
+  .todo-filter-tab {
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    background: var(--card); border: 1px solid var(--border); color: var(--text-secondary);
+    cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.2s;
+  }
+  .todo-filter-tab.active {
+    background: rgba(48,209,88,0.15); border-color: rgba(48,209,88,0.3); color: var(--green);
+  }
+  .todo-filter-tab .tab-count {
+    font-size: 11px; margin-left: 4px; opacity: 0.7;
+  }
+
+  /* Todo List */
+  .todo-list-container {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 12px 20px 100px;
+  }
+  .todo-time-group { margin-bottom: 20px; }
+  .todo-time-label {
+    font-size: 12px; font-weight: 600; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 0 6px;
+    position: sticky; top: 0; background: var(--bg); z-index: 5;
+  }
+
+  /* Todo Item */
+  .todo-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+    transition: opacity 0.3s;
+  }
+  .todo-item.completing { opacity: 0.5; }
+  .todo-checkbox {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.25); background: none;
+    flex-shrink: 0; cursor: pointer; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+    color: transparent; font-size: 12px;
+  }
+  .todo-checkbox:active { transform: scale(0.85); }
+  .todo-checkbox.checked {
+    background: var(--green); border-color: var(--green); color: #000;
+  }
+  .todo-item-body { flex: 1; min-width: 0; }
+  .todo-item-content {
+    font-size: 15px; line-height: 1.5; color: var(--text);
+    word-break: break-word; transition: all 0.3s;
+  }
+  .todo-item.done .todo-item-content {
+    color: var(--text-tertiary); text-decoration: line-through;
+  }
+  .todo-item-meta {
+    display: flex; align-items: center; gap: 8px; margin-top: 4px;
+    font-size: 12px; color: var(--text-tertiary);
+  }
+  .todo-item-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .todo-item-tag {
+    font-size: 10px; padding: 1px 7px; border-radius: 6px;
+    background: rgba(255,255,255,0.06); color: var(--text-secondary);
+  }
+
+  /* Todo Empty State */
+  .todo-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 40px; color: var(--text-tertiary); text-align: center;
+  }
+  .todo-empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .todo-empty-text { font-size: 15px; line-height: 1.6; }
+
+  /* Todo Stats Bar */
+  .todo-stats {
+    display: flex; gap: 16px; padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .todo-stat {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .todo-stat-num { font-weight: 700; font-size: 18px; }
+  .todo-stat-num.pending { color: var(--green); }
+  .todo-stat-num.done { color: var(--text-tertiary); }
+  .todo-progress-bar {
+    flex: 1; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.08); overflow: hidden;
+    align-self: center;
+  }
+  .todo-progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--green), var(--teal));
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
   @media (min-width: 481px) {
     .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
   }
@@ -560,10 +704,54 @@
         <button class="ask-send" id="askSend" onclick="handleAsk()">↑</button>
       </div>
       <div id="answerContainer"></div>
+      <!-- Todo Hub Entry -->
+      <div class="todo-hub-card" id="todoHubCard" onclick="openTodoPanel()" style="display:none;">
+        <div class="todo-hub-icon">✅</div>
+        <div class="todo-hub-info">
+          <div class="todo-hub-title">待办事项</div>
+          <div class="todo-hub-subtitle" id="todoHubSubtitle">加载中...</div>
+        </div>
+        <div class="todo-hub-badge" id="todoHubBadge">0</div>
+        <div class="todo-hub-arrow">›</div>
+      </div>
       <div class="counter" id="counter"></div>
       <div class="entry-list" id="entryList"></div>
     </div>
   </div>
+</div>
+
+<!-- Todo Management Panel -->
+<div class="todo-panel" id="todoPanel">
+  <div class="todo-panel-header">
+    <button class="todo-back-btn" onclick="closeTodoPanel()">‹</button>
+    <div class="todo-panel-title">待办事项</div>
+    <div class="todo-panel-count" id="todoPanelCount"></div>
+  </div>
+  <div class="todo-stats" id="todoStats">
+    <div class="todo-stat">
+      <span class="todo-stat-num pending" id="todoPendingNum">0</span>
+      <span>待完成</span>
+    </div>
+    <div class="todo-progress-bar">
+      <div class="todo-progress-fill" id="todoProgressFill" style="width:0%"></div>
+    </div>
+    <div class="todo-stat">
+      <span class="todo-stat-num done" id="todoDoneNum">0</span>
+      <span>已完成</span>
+    </div>
+  </div>
+  <div class="todo-filter-tabs">
+    <button class="todo-filter-tab active" data-filter="pending" onclick="switchTodoFilter('pending')">
+      待完成 <span class="tab-count" id="todoFilterPendingCount"></span>
+    </button>
+    <button class="todo-filter-tab" data-filter="done" onclick="switchTodoFilter('done')">
+      已完成 <span class="tab-count" id="todoFilterDoneCount"></span>
+    </button>
+    <button class="todo-filter-tab" data-filter="all" onclick="switchTodoFilter('all')">
+      全部
+    </button>
+  </div>
+  <div class="todo-list-container" id="todoListContainer"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1927,6 +2115,8 @@ async function loadEntries() {
     allEntries = entries; // also use for Q&A
     renderEntries();
     setOnline(true);
+    // 同步加载待办数据
+    loadTodoEntries();
   } catch {
     listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败<br>请检查网络连接</div></div>';
     setOnline(false);
@@ -2000,7 +2190,275 @@ async function deleteEntry(id) {
     cachedEntries = cachedEntries.filter(e => e.id !== id);
     allEntries = allEntries.filter(e => e.id !== id);
     renderEntries(); showToast('已删除');
+    // 同步更新待办数据
+    todoEntries = todoEntries.filter(e => e.id !== id);
+    updateTodoHubCard();
   } catch { showToast('删除失败'); }
+}
+
+// ================================================
+// ========= TODO MANAGEMENT =======================
+// ================================================
+
+let todoEntries = [];
+let todoFilter = 'pending'; // 'pending' | 'done' | 'all'
+let todoPanelOpen = false;
+
+// 加载所有待办类型的记录
+async function loadTodoEntries() {
+  // 优先从已加载的 entries/allEntries 中过滤（避免额外请求失败）
+  const source = allEntries.length > 0 ? allEntries : entries.length > 0 ? entries : cachedEntries;
+  let localTodos = source.filter(e => e.type === 'todo');
+
+  // 如果本地已有待办数据，直接使用
+  if (localTodos.length > 0) {
+    todoEntries = localTodos;
+  } else {
+    // 本地没有则尝试从 API 单独拉取
+    try {
+      const res = await fetch(
+        `${API_BASE}/entries?select=*&type=eq.todo&order=created_at.desc&limit=200`,
+        { headers }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      todoEntries = await res.json();
+    } catch (err) {
+      console.error('加载待办失败:', err);
+      todoEntries = [];
+    }
+  }
+
+  // 确保每条记录都有 todo_done 字段
+  todoEntries.forEach(e => {
+    if (typeof e.todo_done === 'undefined') e.todo_done = false;
+  });
+  restoreTodoDoneLocal(todoEntries);
+  updateTodoHubCard();
+}
+
+// 更新回顾页面的待办入口卡片
+function updateTodoHubCard() {
+  const card = document.getElementById('todoHubCard');
+  const badge = document.getElementById('todoHubBadge');
+  const subtitle = document.getElementById('todoHubSubtitle');
+
+  const pending = todoEntries.filter(e => !e.todo_done);
+  const done = todoEntries.filter(e => e.todo_done);
+  const total = todoEntries.length;
+
+  if (total === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'flex';
+  badge.textContent = pending.length;
+  badge.className = pending.length > 0 ? 'todo-hub-badge' : 'todo-hub-badge empty';
+
+  if (pending.length === 0 && done.length > 0) {
+    subtitle.textContent = `全部完成！共 ${done.length} 项`;
+  } else if (pending.length > 0) {
+    // 获取最近一条待完成项的时间描述
+    const latest = pending[0];
+    const timeStr = formatTime(new Date(latest.created_at));
+    subtitle.textContent = `${pending.length} 项待完成 · 最近 ${timeStr}`;
+  } else {
+    subtitle.textContent = `${total} 条待办`;
+  }
+}
+
+// 打开待办面板
+function openTodoPanel() {
+  todoPanelOpen = true;
+  const panel = document.getElementById('todoPanel');
+  panel.style.display = 'flex';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => panel.classList.add('open'));
+  });
+  renderTodoPanel();
+}
+
+// 关闭待办面板
+function closeTodoPanel() {
+  todoPanelOpen = false;
+  const panel = document.getElementById('todoPanel');
+  panel.classList.remove('open');
+  setTimeout(() => { panel.style.display = 'none'; }, 350);
+}
+
+// 切换待办筛选
+function switchTodoFilter(filter) {
+  todoFilter = filter;
+  document.querySelectorAll('.todo-filter-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.filter === filter);
+  });
+  renderTodoList();
+}
+
+// 渲染完整面板
+function renderTodoPanel() {
+  const pending = todoEntries.filter(e => !e.todo_done);
+  const done = todoEntries.filter(e => e.todo_done);
+  const total = todoEntries.length;
+
+  // 统计
+  document.getElementById('todoPendingNum').textContent = pending.length;
+  document.getElementById('todoDoneNum').textContent = done.length;
+  document.getElementById('todoPanelCount').textContent = `共 ${total} 项`;
+
+  // 进度条
+  const pct = total > 0 ? Math.round(done.length / total * 100) : 0;
+  document.getElementById('todoProgressFill').style.width = pct + '%';
+
+  // 筛选计数
+  document.getElementById('todoFilterPendingCount').textContent = pending.length > 0 ? `(${pending.length})` : '';
+  document.getElementById('todoFilterDoneCount').textContent = done.length > 0 ? `(${done.length})` : '';
+
+  renderTodoList();
+}
+
+// 渲染待办列表（按时间分组）
+function renderTodoList() {
+  const container = document.getElementById('todoListContainer');
+  let items;
+
+  if (todoFilter === 'pending') {
+    items = todoEntries.filter(e => !e.todo_done);
+  } else if (todoFilter === 'done') {
+    items = todoEntries.filter(e => e.todo_done);
+  } else {
+    items = [...todoEntries];
+  }
+
+  if (items.length === 0) {
+    const msg = todoFilter === 'pending' ? '没有待完成的事项，太棒了！' :
+                todoFilter === 'done' ? '还没有已完成的事项' : '还没有待办记录';
+    const icon = todoFilter === 'pending' ? '🎉' : '📋';
+    container.innerHTML = `<div class="todo-empty"><div class="todo-empty-icon">${icon}</div><div class="todo-empty-text">${msg}</div></div>`;
+    return;
+  }
+
+  // 按时间分组
+  const groups = groupByTime(items);
+  let html = '';
+
+  for (const [label, groupItems] of groups) {
+    html += `<div class="todo-time-group">`;
+    html += `<div class="todo-time-label">${label}</div>`;
+    groupItems.forEach(e => {
+      const isDone = e.todo_done;
+      const timeStr = formatTime(new Date(e.created_at));
+      const typeLabelSet = new Set(Object.values(typeLabels));
+      const tags = (e.tags || []).filter(t => !typeLabelSet.has(t));
+      const tagsHtml = tags.map(t => `<span class="todo-item-tag">#${t}</span>`).join('');
+
+      html += `
+        <div class="todo-item ${isDone ? 'done' : ''}" data-id="${e.id}">
+          <button class="todo-checkbox ${isDone ? 'checked' : ''}" onclick="toggleTodoDone('${e.id}', event)">
+            ${isDone ? '✓' : ''}
+          </button>
+          <div class="todo-item-body">
+            <div class="todo-item-content">${escapeHtml(e.content)}</div>
+            <div class="todo-item-meta">
+              <span>${timeStr}</span>
+              ${tagsHtml ? `<div class="todo-item-tags">${tagsHtml}</div>` : ''}
+            </div>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+// 按时间分组
+function groupByTime(items) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+  const thisWeek = new Date(today); thisWeek.setDate(thisWeek.getDate() - 7);
+  const thisMonth = new Date(today); thisMonth.setDate(thisMonth.getDate() - 30);
+
+  const groups = new Map();
+  const addTo = (label, item) => {
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(item);
+  };
+
+  items.forEach(item => {
+    const d = new Date(item.created_at);
+    if (d >= today) addTo('今天', item);
+    else if (d >= yesterday) addTo('昨天', item);
+    else if (d >= thisWeek) addTo('近 7 天', item);
+    else if (d >= thisMonth) addTo('近 30 天', item);
+    else addTo('更早', item);
+  });
+
+  return groups;
+}
+
+// 切换待办完成状态
+async function toggleTodoDone(id, event) {
+  event.stopPropagation();
+  const entry = todoEntries.find(e => e.id === id);
+  if (!entry) return;
+
+  const newDone = !entry.todo_done;
+  const itemEl = event.target.closest('.todo-item');
+
+  // 动画
+  if (itemEl) itemEl.classList.add('completing');
+
+  // 先更新本地状态（乐观更新）
+  entry.todo_done = newDone;
+  [entries, cachedEntries, allEntries].forEach(list => {
+    const found = list.find(e => e.id === id);
+    if (found) found.todo_done = newDone;
+  });
+
+  try {
+    // 尝试更新数据库
+    const res = await fetch(`${API_BASE}/entries?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { ...headers, 'Prefer': 'return=representation' },
+      body: JSON.stringify({ todo_done: newDone })
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  } catch (err) {
+    // 数据库更新失败（可能字段尚未添加），用 localStorage 持久化
+    console.warn('数据库更新失败，降级到本地存储:', err.message);
+    saveTodoDoneLocal(id, newDone);
+  }
+
+  // 延迟一下再重新渲染（让动画完成）
+  setTimeout(() => {
+    renderTodoPanel();
+    updateTodoHubCard();
+    showToast(newDone ? '已完成 ✓' : '已恢复待办');
+  }, 300);
+}
+
+// localStorage 降级：保存待办完成状态
+function saveTodoDoneLocal(id, done) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('todo_done_map') || '{}');
+    if (done) stored[id] = true; else delete stored[id];
+    localStorage.setItem('todo_done_map', JSON.stringify(stored));
+  } catch {}
+}
+
+// localStorage 降级：恢复待办完成状态
+function restoreTodoDoneLocal(items) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('todo_done_map') || '{}');
+    items.forEach(e => {
+      if (typeof e.todo_done === 'undefined' || e.todo_done === null) {
+        e.todo_done = !!stored[e.id];
+      }
+    });
+  } catch {}
 }
 
 // ---- Health ----
@@ -2052,7 +2510,7 @@ document.getElementById('askInput').addEventListener('keydown', e => {
 window.addEventListener('DOMContentLoaded', () => {
   renderComposeChips(); updateIndicator(); checkHealth();
   fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers })
-    .then(r => r.ok ? r.json() : []).then(data => { cachedEntries = data; }).catch(() => {});
+    .then(r => r.ok ? r.json() : []).then(data => { cachedEntries = data; loadTodoEntries(); }).catch(() => {});
 });
 setInterval(checkHealth, 30000);
 </script>
