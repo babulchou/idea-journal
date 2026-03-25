@@ -173,6 +173,40 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
 
+  /* ---- Mode Badge (降级模式透明度) ---- */
+  .insight-mode-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+    margin-left: 6px; white-space: nowrap; letter-spacing: 0.2px;
+  }
+  .insight-mode-badge.mode-ai {
+    background: linear-gradient(135deg, #0a84ff, #bf5af2);
+    color: white;
+  }
+  .insight-mode-badge.mode-rule {
+    background: rgba(255,159,10,0.15);
+    color: var(--orange);
+  }
+  .insight-mode-badge.mode-encourage {
+    background: rgba(48,209,88,0.15);
+    color: var(--green);
+  }
+  .insight-mode-badge.mode-local {
+    background: rgba(255,255,255,0.08);
+    color: var(--text-tertiary);
+  }
+
+  /* ---- Source Tag (来源标签视觉层级) ---- */
+  .insight-source-tag {
+    font-size: 11px; font-weight: 500; color: var(--text-tertiary);
+    background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ---- Insight body long text (排版处理) ---- */
+  .insight-body p { margin-bottom: 8px; }
+  .insight-body p:last-child { margin-bottom: 0; }
+  .insight-body em { font-style: italic; color: var(--purple); }
+
   /* ---- Ask Bar (Review Page) ---- */
   .ask-bar {
     padding: 12px 20px; display: flex; gap: 8px; align-items: center;
@@ -673,14 +707,27 @@ async function handleSubmit() {
     renderComposeChips();
     btn.disabled = false; btn.textContent = '记下来';
     if (navigator.vibrate) navigator.vibrate(10);
-    const savedEntry = saved[0] || { ...entry, content };
-    // If URL detected — main feedback is link content reading
-    if (detectedUrls.length > 0) {
-      showToast('已保存，正在读取链接内容...');
-      generateInsightWithLink(savedEntry, detectedUrls[0]);
+    // BUG-07 fix: Supabase POST 可能返回空数组，确保 savedEntry 有有效 id
+    const savedEntry = (Array.isArray(saved) && saved.length > 0) ? saved[0] : null;
+    if (!savedEntry || !savedEntry.id) {
+      // 如果返回为空，用本地构造的 entry 降级（但不调用需要 id 的操作如 saveLinkSummary）
+      const fallbackEntry = { ...entry, content, id: null };
+      if (detectedUrls.length > 0) {
+        showToast('已保存，正在读取链接内容...');
+        generateInsightWithLink(fallbackEntry, detectedUrls[0]);
+      } else {
+        showToast('已记录 ✓');
+        generateInsight(fallbackEntry);
+      }
     } else {
-      showToast('已记录 ✓');
-      generateInsight(savedEntry);
+      // If URL detected — main feedback is link content reading
+      if (detectedUrls.length > 0) {
+        showToast('已保存，正在读取链接内容...');
+        generateInsightWithLink(savedEntry, detectedUrls[0]);
+      } else {
+        showToast('已记录 ✓');
+        generateInsight(savedEntry);
+      }
     }
   } catch (err) {
     console.error('Save error:', err);
@@ -800,8 +847,12 @@ function parseXhsShareText(fullText) {
 }
 
 // ---- Link Parser API ----
-const LINK_PARSER_API = 'https://link-parser-api.onrender.com'; // 部署后的地址
+const LINK_PARSER_API = 'https://link-parser-api.onrender.com'; // 部署后的地址（HTTPS，GitHub Pages 兼容）
+const LINK_PARSER_TENCENT = 'http://81.71.120.8:8900'; // 腾讯云服务器（HTTP，仅本地/非HTTPS环境可用）
 const LINK_PARSER_LOCAL = 'http://localhost:8900'; // 本地调试
+
+// 判断当前是否在 HTTPS 环境（GitHub Pages 等），HTTPS 页面无法调用 HTTP API（Mixed Content）
+const IS_SECURE_CONTEXT = location.protocol === 'https:';
 
 // 存储原始输入文本（用于前端预解析 fallback）
 let _lastRawInputText = '';
@@ -880,8 +931,10 @@ function _buildXhsCompositeResult(originalUrl) {
 }
 
 async function fetchFromParserAPI(url) {
-  // 尝试远程 API，然后本地
-  const endpoints = [LINK_PARSER_API, LINK_PARSER_LOCAL];
+  // 根据安全上下文选择端点：HTTPS 环境下不能调 HTTP 端点（Mixed Content 限制）
+  const endpoints = IS_SECURE_CONTEXT
+    ? [LINK_PARSER_API]  // HTTPS 环境只用 Render（HTTPS）
+    : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL]; // 非 HTTPS 可用全部
   for (const base of endpoints) {
     try {
       const controller = new AbortController();
@@ -1020,17 +1073,54 @@ async function generateInsightWithLink(savedEntry, url) {
   // Fetch link content — this is the main event
   const linkData = await fetchLinkContent(url);
 
-  // Load history for insight (secondary, in background)
+  // Load history for insight (BUG-06 fix: 使用本地快照避免竞态)
+  let insightHistory = [...cachedEntries];
   try {
-    if (cachedEntries.length === 0) {
+    if (insightHistory.length === 0) {
       const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers });
-      if (res.ok) cachedEntries = await res.json();
+      if (res.ok) insightHistory = await res.json();
     }
   } catch {}
-  const others = cachedEntries.filter(e => e.id !== savedEntry.id);
-  const insight = analyzeInsight(savedEntry, others);
-  cachedEntries.unshift(savedEntry);
-  if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
+  const others = insightHistory.filter(e => e.id !== savedEntry.id);
+  if (savedEntry.id && !cachedEntries.some(e => e.id === savedEntry.id)) {
+    cachedEntries.unshift(savedEntry);
+    if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
+  }
+
+  // 调用后端灵感引擎获取碰撞观点（异步，不阻塞链接结果展示）
+  let insightData = null;
+  const inspireEndpoints2 = IS_SECURE_CONTEXT
+    ? [LINK_PARSER_API]
+    : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  for (const base of inspireEndpoints2) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const historyForApi = others.slice(0, 8).map(e => ({
+        content: e.content.substring(0, 200),
+        type: e.type,
+      }));
+      const res = await fetch(`${base}/inspire`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: savedEntry.content,
+          type: savedEntry.type,
+          history: historyForApi,
+        }),
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        insightData = await res.json();
+        if (insightData && insightData.insight) break;
+      }
+    } catch { continue; }
+  }
+
+  // 如果后端灵感引擎不可用，降级到本地分析
+  const insight = insightData || null;
+  const localInsight = analyzeInsight(savedEntry, others);
 
   // ========== BUILD RESULT CARD ==========
 
@@ -1039,11 +1129,13 @@ async function generateInsightWithLink(savedEntry, url) {
     const s = linkData.summary;
     const displayPlatform = s.platform || platform;
 
-    // Save to DB asynchronously
-    saveLinkSummary(savedEntry.id, {
-      url, title: s.title, platform: displayPlatform.name, text: s.text,
-      keywords: s.keywords || [], author: s.author || '', extra_info: s.extraInfo || '',
-    });
+    // Save to DB asynchronously (BUG-07 guard: 仅当有有效 id 时才调用)
+    if (savedEntry.id) {
+      saveLinkSummary(savedEntry.id, {
+        url, title: s.title, platform: displayPlatform.name, text: s.text,
+        keywords: s.keywords || [], author: s.author || '', extra_info: s.extraInfo || '',
+      });
+    }
 
     // Build the primary content card — link summary IS the feedback
     container.innerHTML = `
@@ -1065,28 +1157,41 @@ async function generateInsightWithLink(savedEntry, url) {
             </div>` : ''}
         </div>
 
-        ${insight.related && insight.related.length > 0 ? `
+        ${insight && insight.insight ? `
           <div class="link-result-related">
-            <div class="insight-related-label">你的想法库中有相关记录</div>
-            ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}
-          </div>` : ''}
+            <div class="insight-related-label">💡 灵感碰撞 ${buildModeBadge(insight)}</div>
+            <div style="font-size:13px;line-height:1.7;color:rgba(255,255,255,0.75);padding:4px 0;">${formatInsightText(insight.insight)}</div>
+            ${insight.sources && insight.sources.length > 0 ? insight.sources.map(s =>
+              `<div class="insight-related-item"><span class="insight-source-tag">[${escapeHtml(s.from)}]</span> ${escapeHtml(s.title)}</div>`
+            ).join('') : ''}
+          </div>` : (localInsight.related && localInsight.related.length > 0 ? `
+          <div class="link-result-related">
+            <div class="insight-related-label">你的想法库中有相关记录 <span class="insight-mode-badge mode-local">本地分析</span></div>
+            ${localInsight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}
+          </div>` : '')}
       </div>`;
   } else {
     // FAILED: Fall back to encouragement + explain link is saved
+    const failInsightText = insight && insight.insight ? insight.insight : localInsight.summary;
+    const failSources = insight && insight.sources ? insight.sources : [];
+    const failModeBadge = insight ? buildModeBadge(insight) : '<span class="insight-mode-badge mode-local">本地分析</span>';
     container.innerHTML = `
-      <div class="insight-card${insight.mode === 'encouragement' ? ' encouragement' : ''}">
+      <div class="insight-card${!insight && localInsight.mode === 'encouragement' ? ' encouragement' : ''}">
         <div class="insight-header">
           <span class="insight-icon">${platform.icon}</span>
-          <span class="insight-title">链接已保存</span>
+          <span class="insight-title">链接已保存</span>${failModeBadge}
           <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
         </div>
         <div class="insight-body" style="margin-bottom:8px;">
           <span style="color:var(--text-tertiary);">暂时无法读取${platform.name}的页面内容，链接已保存到记录中。</span>
         </div>
-        <div class="insight-body">${insight.summary}</div>
-        ${insight.related && insight.related.length > 0 ? `
+        <div class="insight-body">${insight && insight.insight ? formatInsightText(failInsightText) : failInsightText}</div>
+        ${failSources.length > 0 ? `
+          <div class="insight-related"><div class="insight-related-label">碰撞来源</div>
+          ${failSources.map(s => `<div class="insight-related-item"><span class="insight-source-tag">[${escapeHtml(s.from)}]</span> ${escapeHtml(s.title)}</div>`).join('')}</div>`
+        : (localInsight.related && localInsight.related.length > 0 ? `
           <div class="insight-related"><div class="insight-related-label">关联记录</div>
-          ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
+          ${localInsight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : '')}
       </div>`;
   }
 }
@@ -1104,30 +1209,161 @@ async function saveLinkSummary(entryId, summaryData) {
   }
 }
 
-// ---- Insight (post-save) ----
+// ---- Insight (post-save) — 调用后端灵感碰撞引擎 ----
 async function generateInsight(newEntry) {
   const container = document.getElementById('insightContainer');
+
+  // 阶段 1：显示搜索知识库状态
+  container.innerHTML = `
+    <div class="insight-card" id="insightProgress">
+      <div class="insight-header">
+        <span class="insight-icon">🧠</span>
+        <span class="insight-title">灵感碰撞中...</span>
+      </div>
+      <div class="thinking">
+        <div class="thinking-dots"><span></span><span></span><span></span></div>
+        <span class="thinking-text" id="insightPhaseText">搜索知识库...</span>
+      </div>
+    </div>`;
+
+  // 5 秒后如果还没返回，提示用户可以先继续记录
+  const hintTimer = setTimeout(() => {
+    const phaseText = document.getElementById('insightPhaseText');
+    if (phaseText) {
+      phaseText.textContent = 'AI 生成中... 可以先继续记录，碰撞结果会稍后出现';
+    }
+  }, 5000);
+
+  // 加载历史记录用于碰撞（BUG-06 fix: 使用本地快照，避免 loadEntries 竞态覆盖）
+  let insightHistory = [...cachedEntries]; // 快照，不受 loadEntries 影响
   try {
-    if (cachedEntries.length === 0) {
+    if (insightHistory.length === 0) {
       const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers });
-      if (res.ok) cachedEntries = await res.json();
+      if (res.ok) insightHistory = await res.json();
     }
   } catch {}
-  const others = cachedEntries.filter(e => e.id !== newEntry.id);
-  const insight = analyzeInsight(newEntry, others);
-  cachedEntries.unshift(newEntry);
-  if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
-  container.innerHTML = `
-    <div class="insight-card${insight.mode === 'encouragement' ? ' encouragement' : ''}">
-      <div class="insight-header">
-        <span class="insight-icon">${insight.icon}</span><span class="insight-title">${insight.title}</span>
-        <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
-      </div>
-      <div class="insight-body">${insight.summary}</div>
-      ${insight.related && insight.related.length > 0 ? `
-        <div class="insight-related"><div class="insight-related-label">关联记录</div>
-        ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
-    </div>`;
+  const others = insightHistory.filter(e => e.id !== newEntry.id);
+  // 安全更新 cachedEntries（仅添加新条目，不覆盖整体）
+  if (newEntry.id && !cachedEntries.some(e => e.id === newEntry.id)) {
+    cachedEntries.unshift(newEntry);
+    if (cachedEntries.length > 30) cachedEntries = cachedEntries.slice(0, 30);
+  }
+
+  // 阶段 2：更新进度到 AI 生成
+  const phaseEl = document.getElementById('insightPhaseText');
+  if (phaseEl) phaseEl.textContent = 'AI 生成中...';
+
+  // 调用后端灵感引擎（缩短超时到 15 秒）
+  let insightData = null;
+  const inspireEndpoints = IS_SECURE_CONTEXT
+    ? [LINK_PARSER_API]
+    : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  for (const base of inspireEndpoints) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const historyForApi = others.slice(0, 8).map(e => ({
+        content: e.content.substring(0, 200),
+        type: e.type,
+      }));
+      const res = await fetch(`${base}/inspire`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: newEntry.content,
+          type: newEntry.type,
+          history: historyForApi,
+        }),
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        insightData = await res.json();
+        if (insightData && insightData.insight) break;
+      }
+    } catch { continue; }
+  }
+
+  clearTimeout(hintTimer);
+
+  if (insightData && insightData.insight) {
+    // 后端返回了灵感碰撞结果
+    const modeBadge = buildModeBadge(insightData);
+    const sources = insightData.sources || [];
+
+    container.innerHTML = `
+      <div class="insight-card">
+        <div class="insight-header">
+          <span class="insight-icon">✨</span>
+          <span class="insight-title">灵感碰撞</span>${modeBadge}
+          <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
+        </div>
+        <div class="insight-body">${formatInsightText(insightData.insight)}</div>
+        ${sources.length > 0 ? `
+          <div class="insight-related">
+            <div class="insight-related-label">碰撞来源</div>
+            ${sources.map(s => `<div class="insight-related-item"><span class="insight-source-tag">[${escapeHtml(s.from)}]</span> ${escapeHtml(s.title)}</div>`).join('')}
+          </div>` : ''}
+      </div>`;
+  } else {
+    // 后端不可用，降级到本地分析
+    const insight = analyzeInsight(newEntry, others);
+    const localModeBadge = '<span class="insight-mode-badge mode-local">本地分析</span>';
+    container.innerHTML = `
+      <div class="insight-card${insight.mode === 'encouragement' ? ' encouragement' : ''}">
+        <div class="insight-header">
+          <span class="insight-icon">${insight.icon}</span><span class="insight-title">${insight.title}</span>${localModeBadge}
+          <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
+        </div>
+        <div class="insight-body">${insight.summary}</div>
+        ${insight.related && insight.related.length > 0 ? `
+          <div class="insight-related"><div class="insight-related-label">关联记录</div>
+          ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
+      </div>`;
+  }
+}
+
+// ---- 构建模式标签 (Task 3: 降级模式透明度) ----
+function buildModeBadge(data) {
+  const hasKB = data.has_knowledge;
+  const hasNotes = data.has_notes;
+  const hasAI = data.has_ai;
+
+  if (hasAI && (hasKB || hasNotes)) {
+    // AI 碰撞模式（最强）
+    const parts = [];
+    if (hasKB) parts.push('知识库');
+    if (hasNotes) parts.push('笔记');
+    return `<span class="insight-mode-badge mode-ai">${parts.join('+')} · AI 碰撞</span>`;
+  } else if (hasAI) {
+    return '<span class="insight-mode-badge mode-ai">AI 碰撞</span>';
+  } else if (hasKB || hasNotes) {
+    // 规则匹配模式
+    const parts = [];
+    if (hasKB) parts.push('知识库');
+    if (hasNotes) parts.push('笔记');
+    return `<span class="insight-mode-badge mode-rule">${parts.join('+')} · 规则匹配</span>`;
+  } else {
+    // 纯鼓励模式
+    return '<span class="insight-mode-badge mode-encourage">鼓励模式</span>';
+  }
+}
+
+// ---- 格式化 insight 文本（Task 4: 长文本排版优化）----
+function formatInsightText(text) {
+  if (!text) return '';
+  // 先转义 HTML，然后恢复有意义的格式
+  let html = escapeHtml(text);
+  // 处理换行符
+  html = html.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+  // 加粗 **text** 或 *text*
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // 如果有段落分隔，包裹 p 标签
+  if (html.includes('</p>')) {
+    html = '<p>' + html + '</p>';
+  }
+  return html;
 }
 
 function analyzeInsight(newEntry, history) {
