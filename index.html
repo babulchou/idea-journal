@@ -323,6 +323,32 @@
     display: flex; align-items: flex-start; gap: 6px; line-height: 1.4;
   }
   .summary-source-item::before { content: '→'; color: var(--accent); flex-shrink: 0; font-size: 11px; }
+  .summary-source-item.clickable {
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s; border-radius: 8px; padding: 6px 8px; margin: 0 -8px;
+  }
+  .summary-source-item.clickable:active { background: rgba(255,255,255,0.04); }
+
+  /* AI answer ref tags */
+  .answer-panel ref {
+    display: inline; color: var(--accent); cursor: pointer;
+    font-weight: 500; -webkit-tap-highlight-color: transparent;
+    border-bottom: 1px dashed rgba(10,132,255,0.4);
+    transition: opacity 0.15s;
+  }
+  .answer-panel ref:active { opacity: 0.6; }
+
+  /* AI mode badge in answer */
+  .answer-mode-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+    margin-left: 6px; white-space: nowrap;
+  }
+  .answer-mode-badge.mode-ai {
+    background: linear-gradient(135deg, #0a84ff, #bf5af2); color: white;
+  }
+  .answer-mode-badge.mode-local {
+    background: rgba(255,255,255,0.08); color: var(--text-tertiary);
+  }
 
   /* Thinking animation */
   .thinking { padding: 20px 16px; display: flex; align-items: center; gap: 10px; }
@@ -781,23 +807,59 @@ CATEGORIES.forEach(c => typeLabels[c.id] = c.label);
 // ---- Smart Classification ----
 function classifyContent(text) {
   const t = text.toLowerCase();
+  const trimmed = text.trim();
   const scores = {};
   CATEGORIES.forEach(c => scores[c.id] = 0);
+
+  // ===== 链接识别 =====
   if (/https?:\/\/|www\.|\.com|\.cn|\.io|\.org|\.net/i.test(t) || /xhslink|bilibili|zhihu|weixin|douyin/i.test(t)) scores.link += 10;
-  if (/要做|需要|待办|todo|记得|别忘|提醒|deadline|ddl|计划做|打算/i.test(t)) scores.todo += 10;
+
+  // ===== 待办识别（大幅强化） =====
+  // 1. 显式待办关键词
+  if (/要做|需要|待办|todo|记得|别忘|提醒|deadline|ddl|计划做|打算|安排/i.test(t)) scores.todo += 10;
+  // 2. 时间 + 动作 模式（"9点去游泳"、"明天开会"、"下午3点面试"、"周末搬家"）
+  if (/\d{1,2}[点时:：]\d{0,2}.*[去做到上来回买取送拿接办跑打写寄交约见弄搞学练修剪洗扫拖煮烧烤发带拍挂订]/.test(trimmed)) scores.todo += 12;
+  if (/\d{1,2}[点时:：]\d{0,2}/.test(trimmed) && trimmed.length < 30) scores.todo += 8;
+  // 3. 时间词开头/包含（明天、今天、下午、周一、下周...）
+  if (/^(今天|明天|后天|今晚|明早|早上|上午|下午|晚上|傍晚|中午|周[一二三四五六日末]|下周|这周|本周|月底|月初|年底)/.test(trimmed)) scores.todo += 8;
+  if (/(明天|后天|今晚|明早|下午|晚上|周[一二三四五六日末]|下周|下个月)/.test(t) && trimmed.length < 40) scores.todo += 6;
+  // 4. 祈使/动作句式（"去+地点"、"买+东西"、"约+人"）
+  if (/^(去|买|约|找|问|看|查|办|交|还|拿|取|寄|送|接|打|写|做|弄|搞|订|预约|报名|联系|回复|确认|提交|完成|处理|准备|整理|收拾|打扫)/.test(trimmed)) scores.todo += 8;
+  // 5. 列表/清单模式（"1. xxx" "- xxx"）
+  if (/^[\d①②③④⑤⑥⑦⑧⑨⑩][.、)）]\s*\S/.test(trimmed) || /^[-•·]\s*\S/.test(trimmed)) scores.todo += 5;
+  // 6. 结尾动作词
+  if (/[去做办买取送拿接交寄还]$/.test(trimmed) && trimmed.length < 20) scores.todo += 6;
+  // 7. 常见待办短语
+  if (/充(值|电|钱)|缴(费|税|纳)|还(钱|款|书|卡)|预约|挂号|签到|打卡|报销|续费|加油|充会员|交房租|交水电/i.test(t)) scores.todo += 10;
+  // 8. 短文本 + 包含动词（短句更可能是待办而非想法）
+  const hasActionVerb = /[去做买约找看办交还拿取寄送接打写弄搞订]/.test(trimmed);
+  if (trimmed.length <= 15 && hasActionVerb) scores.todo += 4;
+
+  // ===== 摘录识别 =====
   if (/[""「」『』]/.test(text) || /说过|名言|摘录|原文|出自|引用|——.*说/i.test(t)) scores.quote += 8;
-  if (/^["「『]/.test(text.trim())) scores.quote += 10;
+  if (/^["「『]/.test(trimmed)) scores.quote += 10;
+
+  // ===== 产品识别 =====
   if (/产品|用户体验|ux|ui|交互|需求|功能|体验|设计|迭代|mvp|feature|痛点|场景|用户/i.test(t)) scores.product += 7;
   if (/产品经理|pm|产品设计|用户调研|竞品/i.test(t)) scores.product += 10;
+
+  // ===== 感悟识别 =====
   if (/感觉|觉得|认为|反思|本质|启发|认知|思考|感受|感悟|理解|洞察|意识到|发现了|明白了|宽容|容错/i.test(t)) scores.reflection += 7;
   if (/人生|哲学|价值观|世界观|底层逻辑/i.test(t)) scores.reflection += 5;
+
+  // ===== 灵感识别 =====
   if (/突然|灵感|想到一个|如果能|可以做一个|idea|创意|点子|脑洞|能不能/i.test(t)) scores.inspiration += 10;
+
+  // ===== 技术/AI 话题 =====
   if (/ai|人工智能|gpt|llm|agent|模型|算法|机器学习|mcp|token|prompt/i.test(t)) {
     scores.thought += 5;
     if (scores.product > 0) scores.product += 3;
     if (scores.reflection > 0) scores.reflection += 3;
   }
-  scores.thought += 3;
+
+  // ===== 想法默认分（降低权重，避免轻易压过其他类型） =====
+  scores.thought += 1;
+
   const sorted = Object.entries(scores).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]);
   if (sorted.length === 0) return ['thought'];
   const topScore = sorted[0][1];
@@ -1401,6 +1463,47 @@ async function saveLinkSummary(entryId, summaryData) {
 async function generateInsight(newEntry) {
   const container = document.getElementById('insightContainer');
 
+  // ===== 待办类型：轻量处理，不走完整灵感碰撞 =====
+  if (newEntry.type === 'todo') {
+    const todoTips = [
+      '已加入待办清单，记下来就是执行力的第一步。',
+      '待办已记录 ✅ 别忘了回顾页查看和管理你的待办事项。',
+      '加入清单了，完成后记得在待办管理里打勾。',
+      '待办已存好。好的执行力从清晰的清单开始。',
+      '又多了一项待办，保持节奏逐个击破。',
+    ];
+    const tip = todoTips[Math.floor(Math.random() * todoTips.length)];
+    // 从历史记录中找相关的待办（仅关键词匹配，不遍历全部）
+    const newWords = extractKeywords(newEntry.content);
+    const relatedTodos = (cachedEntries || [])
+      .filter(e => e.type === 'todo' && e.id !== newEntry.id)
+      .filter(e => {
+        const eWords = extractKeywords(e.content);
+        return newWords.some(w => eWords.includes(w));
+      })
+      .slice(0, 2);
+
+    let relatedHtml = '';
+    if (relatedTodos.length > 0) {
+      const items = relatedTodos.map(r =>
+        `<div class="insight-related-item">✅ ${escapeHtml(r.content.length > 40 ? r.content.substring(0, 40) + '...' : r.content)}</div>`
+      ).join('');
+      relatedHtml = `<div class="insight-related"><div class="insight-related-label">相关待办</div>${items}</div>`;
+    }
+
+    container.innerHTML = `
+      <div class="insight-card">
+        <div class="insight-header">
+          <span class="insight-icon">✅</span>
+          <span class="insight-title">待办确认</span>
+          <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
+        </div>
+        <div class="insight-body">${tip}</div>
+        ${relatedHtml}
+      </div>`;
+    return;
+  }
+
   // 阶段 1：显示搜索知识库状态
   container.innerHTML = `
     <div class="insight-card" id="insightProgress">
@@ -1709,10 +1812,10 @@ async function handleAsk() {
 
   // Show thinking
   container.innerHTML = `
-    <div class="answer-panel search-mode">
+    <div class="answer-panel summary-mode">
       <div class="thinking">
         <div class="thinking-dots"><span></span><span></span><span></span></div>
-        <span class="thinking-text">正在思考...</span>
+        <span class="thinking-text" id="askPhaseText">正在思考...</span>
       </div>
     </div>`;
 
@@ -1736,14 +1839,67 @@ async function handleAsk() {
     return;
   }
 
-  // Small delay for UX feel
-  await new Promise(r => setTimeout(r, 400));
-
+  // 先判断意图
   const intent = detectIntent(question);
 
+  // 搜索模式走本地（快速响应）
   if (intent === 'search') {
+    await new Promise(r => setTimeout(r, 300));
     renderSearchAnswer(question, container);
+    sendBtn.disabled = false;
+    return;
+  }
+
+  // 总结模式：尝试调用后端 AI
+  const phaseEl = document.getElementById('askPhaseText');
+  if (phaseEl) phaseEl.textContent = 'AI 分析中...';
+
+  // 5 秒超时提示
+  const hintTimer = setTimeout(() => {
+    const pt = document.getElementById('askPhaseText');
+    if (pt) pt.textContent = 'AI 正在深度分析你的记录...';
+  }, 5000);
+
+  let aiResult = null;
+  const askEndpoints = IS_SECURE_CONTEXT
+    ? [LINK_PARSER_API]
+    : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+
+  for (const base of askEndpoints) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      // 传入记录（精简版，减少传输量）
+      const entriesForApi = allEntries.slice(0, 200).map(e => ({
+        id: e.id,
+        content: e.content.substring(0, 500),
+        type: e.type,
+        tags: (e.tags || []).slice(0, 5),
+        created_at: e.created_at,
+      }));
+      const res = await fetch(`${base}/ask`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, entries: entriesForApi }),
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        aiResult = await res.json();
+        if (aiResult && aiResult.answer && aiResult.has_ai) break;
+        // 如果后端说没 AI，也跳出但走本地
+        if (aiResult && !aiResult.has_ai) { aiResult = null; break; }
+      }
+    } catch { continue; }
+  }
+
+  clearTimeout(hintTimer);
+
+  if (aiResult && aiResult.answer) {
+    // AI 回答成功
+    renderAIAnswer(question, aiResult, container);
   } else {
+    // 降级到本地分析
     renderSummaryAnswer(question, container);
   }
 
@@ -1901,6 +2057,7 @@ function renderSummaryAnswer(question, container) {
       <div class="answer-intent">
         <span class="answer-intent-icon">🧠</span>
         <span class="answer-intent-label">思考总结</span>
+        <span class="answer-mode-badge mode-local">本地分析</span>
         <button class="answer-close" onclick="closeAnswer()">&times;</button>
       </div>
       <div class="answer-question">"${escapeHtml(question)}"</div>
@@ -1908,9 +2065,74 @@ function renderSummaryAnswer(question, container) {
       ${sources.length > 0 ? `
         <div class="summary-sources">
           <div class="summary-sources-label">基于以下记录</div>
-          ${sources.map(s => `<div class="summary-source-item">${escapeHtml(s)}</div>`).join('')}
+          ${sources.map((s, i) => {
+            const entry = relevantEntries[i];
+            return entry ? `<div class="summary-source-item clickable" onclick="scrollToEntry('${entry.id}')">${escapeHtml(s)}</div>`
+              : `<div class="summary-source-item">${escapeHtml(s)}</div>`;
+          }).join('')}
         </div>` : ''}
     </div>`;
+}
+
+// ---- AI Answer Mode: Render AI-generated answer with clickable refs ----
+function renderAIAnswer(question, aiResult, container) {
+  const refs = aiResult.references || [];
+  const totalRelevant = aiResult.total_relevant || 0;
+
+  container.innerHTML = `
+    <div class="answer-panel summary-mode">
+      <div class="answer-intent">
+        <span class="answer-intent-icon">✨</span>
+        <span class="answer-intent-label">AI 总结</span>
+        <span class="answer-mode-badge mode-ai">AI 分析</span>
+        <button class="answer-close" onclick="closeAnswer()">&times;</button>
+      </div>
+      <div class="answer-question">"${escapeHtml(question)}"</div>
+      <div class="summary-body">${formatAIAnswer(aiResult.answer)}</div>
+      ${refs.length > 0 ? `
+        <div class="summary-sources">
+          <div class="summary-sources-label">引用的记录（点击跳转）</div>
+          ${refs.map(r => {
+            const tl = typeLabels[r.type] || r.type;
+            return `<div class="summary-source-item clickable" onclick="scrollToEntry('${r.id}')">
+              <span class="search-result-badge ${r.type}" style="font-size:10px;padding:1px 6px;margin-right:4px;">${tl}</span>
+              ${escapeHtml(r.content)}
+            </div>`;
+          }).join('')}
+        </div>` : ''}
+      ${totalRelevant > 0 ? `<div style="padding:8px 16px 12px;font-size:11px;color:var(--text-tertiary);">共找到 ${totalRelevant} 条相关记录</div>` : ''}
+    </div>`;
+
+  // Bind click events for inline <ref> tags
+  container.querySelectorAll('ref[data-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      scrollToEntry(el.dataset.id);
+    });
+  });
+}
+
+function formatAIAnswer(text) {
+  if (!text) return '';
+  // 先转义（但保留后端已嵌入的 <ref> 标签）
+  // 后端返回的 answer 中 <ref data-id="xxx">记录N</ref> 需要保留
+  // 分离 ref 标签，对非 ref 内容做 escapeHtml
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  // 恢复 ref 标签
+  html = html.replace(/&lt;ref data-id=&quot;([^&]+)&quot;&gt;(.*?)&lt;\/ref&gt;/g,
+    '<ref data-id="$1">$2</ref>');
+  // 处理换行
+  html = html.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+  // 加粗
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  if (html.includes('</p>')) {
+    html = '<p>' + html + '</p>';
+  }
+  return html;
 }
 
 function generateSummary(question, relevantEntries, isGlobal) {
