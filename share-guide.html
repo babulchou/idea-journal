@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脑瓜子 - 使用指南</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #12121f;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  }
+  .card {
+    width: 100%; max-width: 420px;
+    background: #12121f;
+    padding: 50px 36px 50px;
+    color: white;
+  }
+  .logo { text-align: center; font-size: 56px; margin-bottom: 6px; }
+  .title { text-align: center; font-size: 44px; font-weight: 800; margin-bottom: 6px; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 16px; color: #a0a0b4; margin-bottom: 36px; }
+
+  .qr-section {
+    text-align: center; margin-bottom: 32px;
+  }
+  .qr-wrapper {
+    display: inline-block; background: white; border-radius: 20px; padding: 24px;
+    box-shadow: 0 8px 32px rgba(59,130,246,0.15);
+  }
+  .qr-wrapper img {
+    width: 200px; height: 200px; display: block;
+  }
+  /* QR placeholder - actual QR generated via JS */
+  .qr-canvas { width: 200px; height: 200px; }
+
+  .scan-text {
+    text-align: center; font-size: 20px; color: #a0a0b4; margin: 20px 0 8px;
+    font-weight: 500;
+  }
+  .scan-hint {
+    text-align: center; font-size: 14px; color: #6a6a7e; margin-bottom: 36px;
+  }
+
+  .divider {
+    width: 200px; height: 1px; background: #2a2a3e;
+    margin: 0 auto 32px;
+  }
+
+  .steps-title {
+    text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 24px;
+  }
+
+  .steps {
+    list-style: none; margin-bottom: 36px;
+  }
+  .steps li {
+    display: flex; align-items: flex-start; gap: 14px;
+    margin-bottom: 20px;
+  }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #3b82f6; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .step-content { flex: 1; }
+  .step-content .step-title {
+    font-size: 17px; font-weight: 600; margin-bottom: 3px;
+  }
+  .step-content .step-desc {
+    font-size: 14px; color: #8a8a9e; line-height: 1.5;
+  }
+
+  .divider2 {
+    width: 200px; height: 1px; background: #2a2a3e;
+    margin: 0 auto 28px;
+  }
+
+  .tip-box {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+  }
+  .tip-box .tip-title {
+    font-size: 15px; font-weight: 600; color: #3b82f6; margin-bottom: 8px;
+  }
+  .tip-box .tip-desc {
+    font-size: 14px; color: #a0a0b4; line-height: 1.6;
+  }
+
+  .url-text {
+    text-align: center; font-size: 14px; color: #4a4a6e;
+    margin-bottom: 12px; word-break: break-all;
+  }
+  .url-text a { color: #3b82f6; text-decoration: none; }
+
+  .footer {
+    text-align: center; font-size: 13px; color: #3a3a4e;
+    margin-top: 20px;
+  }
+</style>
+<!-- QR Code library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🐝</div>
+  <div class="title">脑瓜子</div>
+  <div class="subtitle">你的随身外脑 · 扫码即用</div>
+
+  <div class="qr-section">
+    <div class="qr-wrapper">
+      <canvas id="qrCanvas" class="qr-canvas"></canvas>
+    </div>
+  </div>
+
+  <div class="scan-text">📱 扫码即用 · 无需下载</div>
+  <div class="scan-hint">微信扫码 → 右上角「⋯」→ 用浏览器打开</div>
+
+  <div class="divider"></div>
+
+  <div class="steps-title">📋 三步开始</div>
+
+  <ul class="steps">
+    <li>
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">扫码打开</div>
+        <div class="step-desc">手机浏览器直接打开，无需下载任何 App</div>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">注册账号</div>
+        <div class="step-desc">邮箱 + 密码，3 秒搞定<br>（数据云端同步，换手机也不丢）</div>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">开始记录！</div>
+        <div class="step-desc">想到什么写什么，AI 帮你自动分类和碰撞灵感</div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="divider2"></div>
+
+  <div class="tip-box">
+    <div class="tip-title">💡 Pro Tip：加到主屏幕</div>
+    <div class="tip-desc">
+      iPhone：Safari 打开 → 底部分享按钮 → 「添加到主屏幕」<br>
+      Android：Chrome 打开 → 菜单 → 「添加到主屏幕」<br>
+      像原生 App 一样丝滑！
+    </div>
+  </div>
+
+  <div class="url-text">
+    或者直接访问：<br>
+    <a>babulchou.github.io/idea-journal</a>
+  </div>
+
+  <div class="footer">脑瓜子 Buzzy · 内测中</div>
+</div>
+
+<script>
+  // Generate QR code
+  var qr = qrcode(0, 'H');
+  qr.addData('https://babulchou.github.io/idea-journal/');
+  qr.make();
+
+  var canvas = document.getElementById('qrCanvas');
+  var ctx = canvas.getContext('2d');
+  var size = 200;
+  canvas.width = size;
+  canvas.height = size;
+
+  var moduleCount = qr.getModuleCount();
+  var cellSize = size / moduleCount;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.fillStyle = '#1a1a2e';
+  for (var row = 0; row < moduleCount; row++) {
+    for (var col = 0; col < moduleCount; col++) {
+      if (qr.isDark(row, col)) {
+        ctx.fillRect(col * cellSize, row * cellSize, cellSize + 0.5, cellSize + 0.5);
+      }
+    }
+  }
+</script>
+</body>
+</html>

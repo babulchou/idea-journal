@@ -50,9 +50,9 @@
   }
 
   /* ---- Header ---- */
-  .header { padding: 16px 20px 8px; display: flex; justify-content: space-between; align-items: center; }
-  .header h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; }
-  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .header { padding: 16px 20px 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; white-space: nowrap; flex-shrink: 0; }
+  .header-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 1; min-width: 0; }
   .icon-btn {
     width: 36px; height: 36px; border-radius: 50%; background: var(--card);
     border: none; color: var(--accent); font-size: 18px;
@@ -139,6 +139,49 @@
     background: linear-gradient(135deg, rgba(10,132,255,0.08), rgba(191,90,242,0.08));
     border: 1px solid rgba(10,132,255,0.15); border-radius: 16px; padding: 16px;
     animation: slideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  /* 灵光一闪特效 */
+  .insight-card.sparkle-entrance {
+    animation: sparkleIn 1s cubic-bezier(0.32, 0.72, 0, 1);
+    position: relative;
+    border-color: rgba(255,215,0,0.5) !important;
+  }
+  /* 金色发光脉冲边框 */
+  .insight-card.sparkle-entrance {
+    box-shadow: 0 0 15px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.1), inset 0 0 15px rgba(255,215,0,0.05);
+    animation: sparkleIn 1s cubic-bezier(0.32, 0.72, 0, 1), sparkleGlow 1.5s ease-in-out 0.8s 2;
+  }
+  @keyframes sparkleIn {
+    0% { opacity: 0; transform: translateY(24px) scale(0.92); box-shadow: 0 0 0 rgba(255,215,0,0); border-color: transparent; }
+    30% { opacity: 1; transform: translateY(-6px) scale(1.03); box-shadow: 0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.2); border-color: rgba(255,215,0,0.6); }
+    50% { transform: translateY(2px) scale(1); box-shadow: 0 0 40px rgba(191,90,242,0.3), 0 0 15px rgba(255,215,0,0.3); }
+    100% { transform: translateY(0) scale(1); box-shadow: 0 0 15px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.1), inset 0 0 15px rgba(255,215,0,0.05); }
+  }
+  @keyframes sparkleGlow {
+    0%, 100% { box-shadow: 0 0 15px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.4); }
+    50% { box-shadow: 0 0 25px rgba(255,215,0,0.5), 0 0 50px rgba(191,90,242,0.2); border-color: rgba(255,215,0,0.7); }
+  }
+  /* 灵感闪光背景脉冲 */
+  .insight-card.sparkle-entrance .insight-header .insight-icon {
+    animation: iconPulse 0.8s ease-in-out 0.2s;
+  }
+  @keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    30% { transform: scale(1.8) rotate(-10deg); }
+    60% { transform: scale(1.4) rotate(5deg); }
+  }
+  /* 顶部闪光条 */
+  .insight-card.sparkle-entrance .insight-header::after {
+    content: '';
+    position: absolute; top: 0; left: -100%; width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.8), rgba(255,255,255,0.9), rgba(255,215,0,0.8), transparent);
+    animation: shineSlide 1.2s ease-in-out 0.3s;
+  }
+  .insight-card.sparkle-entrance .insight-header {
+    position: relative; overflow: hidden;
+  }
+  @keyframes shineSlide {
+    0% { left: -60%; } 100% { left: 120%; }
   }
   @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   .insight-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
@@ -398,6 +441,47 @@
   .entry-content { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.85); word-break: break-word; }
   .entry-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   .entry-tag { font-size: 12px; color: var(--text-secondary); background: rgba(255,255,255,0.06); padding: 2px 10px; border-radius: 8px; }
+
+  /* ---- Tag Editor Overlay ---- */
+  .tag-editor-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 2000;
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.2s ease;
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .tag-editor-panel {
+    width: 100%; max-width: 420px;
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    padding: 20px 20px calc(var(--safe-bottom) + 20px);
+    animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .tag-editor-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+  }
+  .tag-editor-title { font-size: 17px; font-weight: 700; }
+  .tag-editor-close {
+    background: none; border: none; color: var(--text-tertiary); font-size: 24px; cursor: pointer;
+  }
+  .tag-editor-section { margin-bottom: 16px; }
+  .tag-editor-label { font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px; font-weight: 600; }
+  .tag-editor-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag-editor-chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 500;
+    border: 1.5px solid var(--border); background: transparent; color: var(--text-secondary);
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .tag-editor-chip.selected {
+    background: rgba(10,132,255,0.15); border-color: var(--accent); color: var(--accent);
+  }
+  .tag-editor-save {
+    width: 100%; padding: 14px; border-radius: 14px; border: none;
+    background: var(--accent); color: white; font-size: 16px; font-weight: 600;
+    cursor: pointer; margin-top: 8px;
+  }
+  .tag-editor-save:active { opacity: 0.8; }
 
   /* Link Summary Collapsible */
   .link-summary-toggle {
@@ -741,7 +825,7 @@
     display: flex; align-items: center; gap: 8px; padding: 0 4px;
   }
   .auth-user-email {
-    font-size: 12px; color: var(--text-secondary); max-width: 120px;
+    font-size: 11px; color: var(--text-tertiary); max-width: 80px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .auth-logout-btn {
@@ -755,6 +839,185 @@
     .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
   }
   ::-webkit-scrollbar { width: 0; }
+
+  /* ---- Feedback Floating Button ---- */
+  .feedback-fab {
+    position: fixed; bottom: calc(20px + var(--safe-bottom)); right: 16px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text-secondary); font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 90; transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0.6;
+  }
+  .feedback-fab:hover, .feedback-fab:active { opacity: 1; transform: scale(1.1); }
+
+  /* ---- Feedback Modal ---- */
+  .feedback-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 200; display: none; align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  }
+  .feedback-overlay.show { display: flex; }
+  .feedback-modal {
+    width: 100%; max-width: 480px; max-height: 85vh;
+    background: var(--card-solid); border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(20px + var(--safe-bottom));
+    display: flex; flex-direction: column; gap: 16px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .feedback-header { display: flex; justify-content: space-between; align-items: center; }
+  .feedback-header h3 { font-size: 18px; font-weight: 600; }
+  .feedback-close {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--card);
+    border: none; color: var(--text-secondary); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .feedback-textarea {
+    width: 100%; min-height: 120px; max-height: 200px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; color: var(--text); font-size: 15px; line-height: 1.5;
+    resize: none; outline: none; font-family: inherit;
+  }
+  .feedback-textarea::placeholder { color: var(--text-tertiary); }
+  .feedback-textarea:focus { border-color: rgba(10,132,255,0.4); }
+  .feedback-actions { display: flex; gap: 10px; align-items: center; }
+  .feedback-screenshot-btn {
+    flex: 0 0 auto; padding: 8px 14px; border-radius: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text-secondary); font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+  }
+  .feedback-screenshot-btn.has-screenshot { border-color: var(--green); color: var(--green); }
+  .feedback-submit-btn {
+    flex: 1; padding: 12px; border-radius: 12px;
+    background: var(--accent); border: none; color: #fff;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+  }
+  .feedback-submit-btn:disabled { opacity: 0.5; }
+  .feedback-screenshot-preview {
+    position: relative; border-radius: 8px; overflow: hidden;
+    max-height: 120px; display: none;
+  }
+  .feedback-screenshot-preview.show { display: block; }
+  .feedback-screenshot-preview img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); }
+  .feedback-screenshot-remove {
+    position: absolute; top: 4px; right: 4px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(0,0,0,0.7); border: none; color: #fff;
+    font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .feedback-hint { font-size: 12px; color: var(--text-tertiary); text-align: center; }
+
+  /* ---- Admin Console ---- */
+  .admin-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 300; display: none; flex-direction: column;
+    overflow: hidden;
+  }
+  .admin-screen.show { display: flex; }
+  .admin-header {
+    padding: calc(var(--safe-top) + 12px) 20px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border); background: var(--card-solid);
+  }
+  .admin-header h2 { font-size: 20px; font-weight: 700; }
+  .admin-back {
+    padding: 6px 14px; border-radius: 8px; background: var(--card);
+    border: 1px solid var(--border); color: var(--text-secondary);
+    font-size: 14px; cursor: pointer;
+  }
+  .admin-tabs {
+    display: flex; padding: 0 20px; background: var(--card-solid);
+    border-bottom: 1px solid var(--border);
+  }
+  .admin-tab {
+    flex: 1; padding: 12px 0; text-align: center; font-size: 14px; font-weight: 500;
+    color: var(--text-secondary); background: none; border: none; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+  }
+  .admin-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .admin-content {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 16px 20px 80px;
+  }
+
+  /* Admin — Stats Cards */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--card); border-radius: 14px; padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .stat-card .stat-num { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  .stat-card.green .stat-num { color: var(--green); }
+  .stat-card.pink .stat-num { color: var(--pink); }
+  .stat-card.purple .stat-num { color: var(--purple); }
+
+  /* Admin — Table-like list */
+  .admin-section-title { font-size: 16px; font-weight: 600; margin: 20px 0 12px; }
+  .admin-list { display: flex; flex-direction: column; gap: 10px; }
+  .admin-list-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; cursor: pointer; transition: background 0.15s;
+  }
+  .admin-list-item:active { background: rgba(255,255,255,0.05); }
+  .admin-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .admin-item-email { font-size: 13px; color: var(--accent); font-weight: 500; }
+  .admin-item-time { font-size: 12px; color: var(--text-tertiary); }
+  .admin-item-status {
+    font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;
+  }
+  .admin-item-status.pending { background: rgba(255,159,10,0.15); color: var(--orange); }
+  .admin-item-status.read { background: rgba(10,132,255,0.15); color: var(--accent); }
+  .admin-item-status.resolved { background: rgba(48,209,88,0.15); color: var(--green); }
+  .admin-item-content { font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 6px; }
+  .admin-item-content.truncate {
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .admin-item-screenshot {
+    width: 100%; max-height: 200px; object-fit: cover;
+    border-radius: 8px; border: 1px solid var(--border); margin-top: 8px;
+  }
+  .admin-item-logs {
+    margin-top: 8px; padding: 10px; background: rgba(0,0,0,0.3);
+    border-radius: 8px; font-size: 11px; color: var(--text-secondary);
+    max-height: 150px; overflow-y: auto; font-family: monospace; white-space: pre-wrap;
+  }
+
+  /* Admin — Event chart area */
+  .chart-container {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; margin-bottom: 16px;
+  }
+  .chart-bar-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  .chart-bar-label { flex: 0 0 100px; font-size: 12px; color: var(--text-secondary); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chart-bar-track { flex: 1; height: 20px; background: var(--card-solid); border-radius: 4px; overflow: hidden; }
+  .chart-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; min-width: 2px; }
+  .chart-bar-num { flex: 0 0 40px; font-size: 12px; color: var(--text-secondary); }
+  .chart-filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .chart-filter-btn {
+    padding: 4px 12px; border-radius: 8px; font-size: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+  }
+  .chart-filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Admin — User list for analytics */
+  .user-select {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); font-size: 14px; outline: none;
+    margin-bottom: 16px; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
+
+  .admin-empty { text-align: center; padding: 40px 20px; color: var(--text-secondary); font-size: 14px; }
+  .admin-loading { text-align: center; padding: 40px 20px; }
 </style>
 </head>
 <body>
@@ -866,6 +1129,46 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Feedback FAB (only visible when logged in) -->
+<button class="feedback-fab" id="feedbackFab" onclick="openFeedback()" title="反馈" style="display:none;">💬</button>
+
+<!-- Feedback Modal -->
+<div class="feedback-overlay" id="feedbackOverlay">
+  <div class="feedback-modal">
+    <div class="feedback-header">
+      <h3>💬 意见反馈</h3>
+      <button class="feedback-close" onclick="closeFeedback()">✕</button>
+    </div>
+    <textarea class="feedback-textarea" id="feedbackText" placeholder="遇到问题或有好建议？告诉我们..."></textarea>
+    <div class="feedback-screenshot-preview" id="feedbackScreenshotPreview">
+      <img id="feedbackScreenshotImg">
+      <button class="feedback-screenshot-remove" onclick="removeFeedbackScreenshot()">✕</button>
+    </div>
+    <div class="feedback-actions">
+      <button class="feedback-screenshot-btn" id="feedbackScreenshotBtn" onclick="captureFeedbackScreenshot()">📷 截图</button>
+      <input type="file" id="feedbackFileInput" accept="image/*" style="display:none;" onchange="handleFeedbackFile(event)">
+      <button class="feedback-submit-btn" id="feedbackSubmitBtn" onclick="submitFeedback()">提交反馈</button>
+    </div>
+    <div class="feedback-hint">提交时会自动附带操作日志，帮助我们排查问题</div>
+  </div>
+</div>
+
+<!-- Admin Console (accessible only for admin users) -->
+<div class="admin-screen" id="adminScreen">
+  <div class="admin-header">
+    <h2>📊 管理后台</h2>
+    <button class="admin-back" onclick="closeAdmin()">← 返回</button>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-atab="feedback" onclick="switchAdminTab('feedback')">用户反馈</button>
+    <button class="admin-tab" data-atab="analytics" onclick="switchAdminTab('analytics')">数据统计</button>
+    <button class="admin-tab" data-atab="users" onclick="switchAdminTab('users')">用户概览</button>
+  </div>
+  <div class="admin-content" id="adminContent">
+    <!-- dynamically rendered -->
+  </div>
+</div>
+
 <script>
 // ---- Config ----
 const SUPABASE_URL = 'https://dbduutzsoynmhbfazpxu.supabase.co';
@@ -889,6 +1192,461 @@ function updateHeaders() {
   };
 }
 updateHeaders(); // initial with anon key
+
+// ============================================================
+// ========= BUZZY ANALYTICS — 埋点 SDK =======================
+// ============================================================
+const _ba = (() => {
+  const SESSION_KEY = 'buzzy_session';
+  const FLUSH_INTERVAL = 10000; // 10s flush
+  const MAX_QUEUE = 50;
+  let queue = [];
+  let sessionId = '';
+  let currentPage = 'compose';
+  let pageEnterTime = Date.now();
+  let _flushTimer = null;
+  let _consoleLogs = []; // 最近 50 条日志，用于反馈附带
+  const MAX_LOGS = 50;
+
+  // ---- Session ----
+  function initSession() {
+    const stored = sessionStorage.getItem(SESSION_KEY);
+    if (stored) { sessionId = stored; return; }
+    sessionId = 'bs_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    sessionStorage.setItem(SESSION_KEY, sessionId);
+  }
+
+  // ---- Console Log Capture ----
+  function hookConsole() {
+    const orig = { log: console.log, warn: console.warn, error: console.error };
+    ['log', 'warn', 'error'].forEach(level => {
+      console[level] = function(...args) {
+        orig[level].apply(console, args);
+        try {
+          const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+          _consoleLogs.push({ t: Date.now(), l: level, m: msg.slice(0, 500) });
+          if (_consoleLogs.length > MAX_LOGS) _consoleLogs.shift();
+        } catch {}
+      };
+    });
+    window.addEventListener('error', e => {
+      _consoleLogs.push({ t: Date.now(), l: 'error', m: `[Uncaught] ${e.message} at ${e.filename}:${e.lineno}` });
+      if (_consoleLogs.length > MAX_LOGS) _consoleLogs.shift();
+    });
+    window.addEventListener('unhandledrejection', e => {
+      _consoleLogs.push({ t: Date.now(), l: 'error', m: `[UnhandledRejection] ${e.reason}` });
+      if (_consoleLogs.length > MAX_LOGS) _consoleLogs.shift();
+    });
+  }
+
+  // ---- Track ----
+  function track(event, category = '', label = '', value = 0, metadata = {}) {
+    if (!currentUser) return;
+    queue.push({
+      user_id: currentUser.id,
+      event, category, label,
+      value: Number(value) || 0,
+      page: currentPage,
+      session_id: sessionId,
+      metadata: { ...metadata, ua: navigator.userAgent, screen: `${screen.width}x${screen.height}` },
+      created_at: new Date().toISOString()
+    });
+    if (queue.length >= MAX_QUEUE) flush();
+  }
+
+  // ---- Page View / Duration ----
+  function trackPageView(page) {
+    // Record duration on previous page
+    const now = Date.now();
+    const duration = now - pageEnterTime;
+    if (duration > 1000) {
+      track('page_duration', 'navigation', currentPage, duration);
+    }
+    currentPage = page;
+    pageEnterTime = now;
+    track('page_view', 'navigation', page);
+  }
+
+  // ---- Flush to Supabase ----
+  async function flush() {
+    if (queue.length === 0 || !currentUser) return;
+    const batch = queue.splice(0, MAX_QUEUE);
+    try {
+      await fetch(`${API_BASE}/analytics_events`, {
+        method: 'POST', headers, body: JSON.stringify(batch)
+      });
+    } catch {
+      // 失败则放回队列头部，下次重试
+      queue.unshift(...batch);
+    }
+  }
+
+  function startFlush() {
+    if (_flushTimer) return;
+    _flushTimer = setInterval(flush, FLUSH_INTERVAL);
+    // Page unload flush
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        track('page_duration', 'navigation', currentPage, Date.now() - pageEnterTime);
+        flush();
+      }
+      if (document.visibilityState === 'visible') {
+        pageEnterTime = Date.now();
+      }
+    });
+    window.addEventListener('beforeunload', () => {
+      track('page_duration', 'navigation', currentPage, Date.now() - pageEnterTime);
+      // Use sendBeacon for reliable final flush
+      if (queue.length > 0 && currentUser) {
+        const body = JSON.stringify(queue);
+        navigator.sendBeacon?.(`${API_BASE}/analytics_events?apikey=${SUPABASE_KEY}`, new Blob([body], { type: 'application/json' }));
+        queue = [];
+      }
+    });
+  }
+
+  function stopFlush() { clearInterval(_flushTimer); _flushTimer = null; }
+
+  function getConsoleLogs() { return [..._consoleLogs]; }
+
+  initSession();
+  hookConsole();
+
+  return { track, trackPageView, flush, startFlush, stopFlush, getConsoleLogs, get currentPage() { return currentPage; } };
+})();
+
+// ============================================================
+// ========= FEEDBACK SYSTEM — 用户反馈 =======================
+// ============================================================
+let _feedbackScreenshotData = '';
+
+function openFeedback() {
+  document.getElementById('feedbackOverlay').classList.add('show');
+  document.getElementById('feedbackText').focus();
+  _ba.track('feedback_open', 'feedback', 'fab_click');
+}
+
+function closeFeedback() {
+  document.getElementById('feedbackOverlay').classList.remove('show');
+  document.getElementById('feedbackText').value = '';
+  _feedbackScreenshotData = '';
+  document.getElementById('feedbackScreenshotPreview').classList.remove('show');
+  document.getElementById('feedbackScreenshotBtn').classList.remove('has-screenshot');
+}
+
+function captureFeedbackScreenshot() {
+  // 使用文件选择让用户上传截图或拍照
+  document.getElementById('feedbackFileInput').click();
+}
+
+function handleFeedbackFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('图片太大，请选择 5MB 以内的'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    _feedbackScreenshotData = reader.result;
+    document.getElementById('feedbackScreenshotImg').src = _feedbackScreenshotData;
+    document.getElementById('feedbackScreenshotPreview').classList.add('show');
+    document.getElementById('feedbackScreenshotBtn').classList.add('has-screenshot');
+  };
+  reader.readAsDataURL(file);
+  event.target.value = ''; // reset
+}
+
+function removeFeedbackScreenshot() {
+  _feedbackScreenshotData = '';
+  document.getElementById('feedbackScreenshotPreview').classList.remove('show');
+  document.getElementById('feedbackScreenshotBtn').classList.remove('has-screenshot');
+}
+
+async function submitFeedback() {
+  const text = document.getElementById('feedbackText').value.trim();
+  if (!text) { showToast('请输入反馈内容'); return; }
+  if (!currentUser) { showToast('请先登录'); return; }
+
+  const btn = document.getElementById('feedbackSubmitBtn');
+  btn.disabled = true; btn.textContent = '提交中...';
+
+  const feedback = {
+    user_id: currentUser.id,
+    content: text,
+    screenshot: _feedbackScreenshotData || '',
+    logs: _ba.getConsoleLogs(),
+    page: _ba.currentPage,
+    ua: navigator.userAgent,
+    screen_size: `${screen.width}x${screen.height}`,
+    status: 'pending'
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/user_feedback`, {
+      method: 'POST', headers, body: JSON.stringify(feedback)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    showToast('反馈已提交，谢谢！ ❤️');
+    closeFeedback();
+    _ba.track('feedback_submit', 'feedback', 'success');
+  } catch (err) {
+    console.error('Feedback submit error:', err);
+    showToast('提交失败，请稍后再试');
+    _ba.track('feedback_submit', 'feedback', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '提交反馈';
+  }
+}
+
+// ============================================================
+// ========= ADMIN CONSOLE — 后台管理 =========================
+// ============================================================
+let _adminData = { feedback: [], events: [], users: [] };
+let _adminTab = 'feedback';
+let _isAdmin = false;
+let _adminEventFilter = '7d'; // 7d, 30d, all
+let _adminSelectedUser = 'all';
+
+async function checkIsAdmin() {
+  if (!currentUser) return false;
+  try {
+    const res = await fetch(`${API_BASE}/admin_users?user_id=eq.${currentUser.id}&select=user_id`, { headers });
+    if (res.ok) {
+      const data = await res.json();
+      _isAdmin = data.length > 0;
+    }
+  } catch { _isAdmin = false; }
+  return _isAdmin;
+}
+
+function openAdmin() {
+  if (!_isAdmin) { showToast('无管理权限'); return; }
+  document.getElementById('adminScreen').classList.add('show');
+  _adminTab = 'feedback';
+  loadAdminData();
+  _ba.track('admin_open', 'admin', 'open');
+}
+
+function closeAdmin() {
+  document.getElementById('adminScreen').classList.remove('show');
+}
+
+function switchAdminTab(tab) {
+  _adminTab = tab;
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.atab === tab));
+  renderAdminContent();
+}
+
+async function loadAdminData() {
+  const content = document.getElementById('adminContent');
+  content.innerHTML = '<div class="admin-loading"><div class="spinner"></div></div>';
+
+  try {
+    // Load feedback
+    const fbRes = await fetch(`${API_BASE}/user_feedback?select=*&order=created_at.desc&limit=100`, { headers });
+    if (fbRes.ok) _adminData.feedback = await fbRes.json();
+
+    // Load recent events (last 7 days by default)
+    const since = new Date(Date.now() - 7 * 86400000).toISOString();
+    const evRes = await fetch(`${API_BASE}/analytics_events?select=*&created_at=gte.${since}&order=created_at.desc&limit=2000`, { headers });
+    if (evRes.ok) _adminData.events = await evRes.json();
+
+    // Extract unique users
+    const userMap = {};
+    _adminData.events.forEach(e => {
+      if (e.user_id && !userMap[e.user_id]) userMap[e.user_id] = { id: e.user_id, count: 0, last: e.created_at };
+      if (e.user_id) userMap[e.user_id].count++;
+    });
+    _adminData.feedback.forEach(f => {
+      if (f.user_id && !userMap[f.user_id]) userMap[f.user_id] = { id: f.user_id, count: 0, last: f.created_at };
+    });
+    _adminData.users = Object.values(userMap).sort((a, b) => b.count - a.count);
+
+    renderAdminContent();
+  } catch (err) {
+    content.innerHTML = '<div class="admin-empty">加载失败: ' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function renderAdminContent() {
+  const c = document.getElementById('adminContent');
+  if (_adminTab === 'feedback') renderAdminFeedback(c);
+  else if (_adminTab === 'analytics') renderAdminAnalytics(c);
+  else if (_adminTab === 'users') renderAdminUsers(c);
+}
+
+function renderAdminFeedback(c) {
+  const list = _adminData.feedback;
+  if (list.length === 0) { c.innerHTML = '<div class="admin-empty">暂无反馈 🎉</div>'; return; }
+
+  const statusCount = { pending: 0, read: 0, resolved: 0 };
+  list.forEach(f => { statusCount[f.status] = (statusCount[f.status] || 0) + 1; });
+
+  c.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">${list.length}</div><div class="stat-label">总反馈数</div></div>
+      <div class="stat-card pink"><div class="stat-num">${statusCount.pending}</div><div class="stat-label">待处理</div></div>
+    </div>
+    <div class="admin-section-title">反馈列表</div>
+    <div class="admin-list">
+      ${list.map((f, i) => `
+        <div class="admin-list-item" onclick="toggleAdminFeedbackDetail(${i})">
+          <div class="admin-item-header">
+            <span class="admin-item-email">${escapeHtml((f.user_id || '').slice(0, 8))}...</span>
+            <span class="admin-item-status ${f.status}">${f.status === 'pending' ? '待处理' : f.status === 'read' ? '已读' : '已解决'}</span>
+            <span class="admin-item-time">${formatTime(new Date(f.created_at))}</span>
+          </div>
+          <div class="admin-item-content truncate" id="adminFb${i}">${escapeHtml(f.content)}</div>
+          <div id="adminFbDetail${i}" style="display:none;">
+            ${f.screenshot ? `<img class="admin-item-screenshot" src="${f.screenshot}" loading="lazy">` : ''}
+            ${f.logs && f.logs.length > 0 ? `<div class="admin-item-logs">${f.logs.map(l => `[${new Date(l.t).toLocaleTimeString()}] [${l.l}] ${escapeHtml(l.m)}`).join('\n')}</div>` : ''}
+            <div style="margin-top:8px;display:flex;gap:6px;">
+              <button class="chart-filter-btn" onclick="event.stopPropagation();updateFeedbackStatus(${i},'read')">标记已读</button>
+              <button class="chart-filter-btn" onclick="event.stopPropagation();updateFeedbackStatus(${i},'resolved')">已解决</button>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function toggleAdminFeedbackDetail(idx) {
+  const el = document.getElementById(`adminFbDetail${idx}`);
+  const content = document.getElementById(`adminFb${idx}`);
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    content.classList.remove('truncate');
+  } else {
+    el.style.display = 'none';
+    content.classList.add('truncate');
+  }
+}
+
+async function updateFeedbackStatus(idx, status) {
+  const f = _adminData.feedback[idx];
+  if (!f) return;
+  try {
+    await fetch(`${API_BASE}/user_feedback?id=eq.${f.id}`, {
+      method: 'PATCH', headers, body: JSON.stringify({ status })
+    });
+    f.status = status;
+    renderAdminContent();
+    showToast('状态已更新');
+  } catch { showToast('更新失败'); }
+}
+
+function renderAdminAnalytics(c) {
+  const events = _adminData.events;
+
+  // Filter by user
+  const filtered = _adminSelectedUser === 'all' ? events : events.filter(e => e.user_id === _adminSelectedUser);
+
+  // Stats
+  const uniqueSessions = new Set(filtered.map(e => e.session_id)).size;
+  const pageViews = filtered.filter(e => e.event === 'page_view').length;
+  const totalDuration = filtered.filter(e => e.event === 'page_duration').reduce((s, e) => s + e.value, 0);
+  const avgSessionMin = uniqueSessions > 0 ? Math.round(totalDuration / uniqueSessions / 60000) : 0;
+
+  // Event counts by name
+  const eventCounts = {};
+  filtered.forEach(e => { if (e.event !== 'page_duration') eventCounts[e.event] = (eventCounts[e.event] || 0) + 1; });
+  const sortedEvents = Object.entries(eventCounts).sort((a, b) => b[1] - a[1]);
+  const maxCount = sortedEvents.length > 0 ? sortedEvents[0][1] : 1;
+
+  // Page duration breakdown
+  const pageDurations = {};
+  filtered.filter(e => e.event === 'page_duration').forEach(e => {
+    pageDurations[e.label] = (pageDurations[e.label] || 0) + e.value;
+  });
+
+  // User selector
+  const userOptions = _adminData.users.map(u =>
+    `<option value="${u.id}" ${_adminSelectedUser === u.id ? 'selected' : ''}>${u.id.slice(0, 8)}... (${u.count}事件)</option>`
+  ).join('');
+
+  c.innerHTML = `
+    <select class="user-select" onchange="_adminSelectedUser=this.value;renderAdminContent();">
+      <option value="all" ${_adminSelectedUser === 'all' ? 'selected' : ''}>全部用户</option>
+      ${userOptions}
+    </select>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">${uniqueSessions}</div><div class="stat-label">会话数</div></div>
+      <div class="stat-card green"><div class="stat-num">${pageViews}</div><div class="stat-label">页面浏览</div></div>
+      <div class="stat-card purple"><div class="stat-num">${avgSessionMin}min</div><div class="stat-label">平均会话时长</div></div>
+      <div class="stat-card pink"><div class="stat-num">${filtered.length}</div><div class="stat-label">总事件数</div></div>
+    </div>
+
+    <div class="admin-section-title">事件分布</div>
+    <div class="chart-container">
+      ${sortedEvents.slice(0, 15).map(([name, count]) => `
+        <div class="chart-bar-row">
+          <div class="chart-bar-label">${escapeHtml(name)}</div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width:${Math.round(count/maxCount*100)}%;background:var(--accent);"></div>
+          </div>
+          <div class="chart-bar-num">${count}</div>
+        </div>
+      `).join('')}
+      ${sortedEvents.length === 0 ? '<div class="admin-empty">暂无事件数据</div>' : ''}
+    </div>
+
+    <div class="admin-section-title">页面停留时长</div>
+    <div class="chart-container">
+      ${Object.entries(pageDurations).sort((a, b) => b[1] - a[1]).map(([page, ms]) => `
+        <div class="chart-bar-row">
+          <div class="chart-bar-label">${escapeHtml(page)}</div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width:${Math.round(ms/Math.max(...Object.values(pageDurations))*100)}%;background:var(--green);"></div>
+          </div>
+          <div class="chart-bar-num">${Math.round(ms/1000)}s</div>
+        </div>
+      `).join('')}
+      ${Object.keys(pageDurations).length === 0 ? '<div class="admin-empty">暂无时长数据</div>' : ''}
+    </div>
+  `;
+}
+
+function renderAdminUsers(c) {
+  const users = _adminData.users;
+  if (users.length === 0) { c.innerHTML = '<div class="admin-empty">暂无用户数据</div>'; return; }
+
+  // Per-user stats
+  const userStats = users.map(u => {
+    const userEvents = _adminData.events.filter(e => e.user_id === u.id);
+    const sessions = new Set(userEvents.map(e => e.session_id)).size;
+    const submissions = userEvents.filter(e => e.event === 'submit_entry').length;
+    const asks = userEvents.filter(e => e.event === 'ask_question').length;
+    const feedbackCount = _adminData.feedback.filter(f => f.user_id === u.id).length;
+    const totalDuration = userEvents.filter(e => e.event === 'page_duration').reduce((s, e) => s + e.value, 0);
+    return { ...u, sessions, submissions, asks, feedbackCount, totalDuration };
+  });
+
+  c.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">${users.length}</div><div class="stat-label">活跃用户</div></div>
+      <div class="stat-card green"><div class="stat-num">${_adminData.events.length}</div><div class="stat-label">总事件</div></div>
+    </div>
+    <div class="admin-section-title">用户明细</div>
+    <div class="admin-list">
+      ${userStats.map(u => `
+        <div class="admin-list-item" onclick="_adminSelectedUser='${u.id}';switchAdminTab('analytics');">
+          <div class="admin-item-header">
+            <span class="admin-item-email">${u.id.slice(0, 8)}...</span>
+            <span class="admin-item-time">最后活跃: ${formatTime(new Date(u.last))}</span>
+          </div>
+          <div style="display:flex;gap:16px;font-size:13px;color:var(--text-secondary);">
+            <span>🔗 ${u.sessions}次访问</span>
+            <span>📝 ${u.submissions}条记录</span>
+            <span>❓ ${u.asks}次提问</span>
+            <span>💬 ${u.feedbackCount}条反馈</span>
+            <span>⏱️ ${Math.round(u.totalDuration/60000)}min</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ============================================================
 
 // ---- Auth UI Logic ----
 let isSignUpMode = false;
@@ -963,6 +1721,12 @@ async function handleAuth() {
 }
 
 async function handleLogout() {
+  _ba.track('logout', 'auth', 'logout');
+  await _ba.flush();
+  _ba.stopFlush();
+  document.getElementById('feedbackFab').style.display = 'none';
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) adminBtn.remove();
   await sb.auth.signOut();
   // onAuthStateChange 会处理 UI 切换
 }
@@ -971,9 +1735,10 @@ function showMainApp(user) {
   currentUser = user;
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('mainApp').style.display = '';
-  // 显示用户邮箱
+  // 显示用户邮箱（只显示 @ 前的用户名，避免占太多空间）
   const emailEl = document.getElementById('userEmail');
-  emailEl.textContent = user.email;
+  const shortName = user.email.split('@')[0];
+  emailEl.textContent = shortName.length > 8 ? shortName.substring(0, 8) + '..' : shortName;
   emailEl.title = user.email;
   // 初始化应用
   initApp();
@@ -1143,6 +1908,7 @@ function switchTab(tab) {
   document.getElementById('composeView').style.display = tab === 'compose' ? 'flex' : 'none';
   document.getElementById('listView').style.display = tab === 'list' ? 'block' : 'none';
   if (tab === 'list') loadEntries();
+  _ba.trackPageView(tab === 'list' ? 'review' : 'compose');
   updateIndicator();
 }
 
@@ -1182,6 +1948,19 @@ async function handleSubmit() {
     renderComposeChips();
     btn.disabled = false; btn.textContent = '记下来';
     if (navigator.vibrate) navigator.vibrate(10);
+    // 需求1：记录用户手动切换分类（AI推荐 vs 用户最终选择）
+    const aiRecommended = classifyContent(content);
+    const userFinal = typesArray;
+    const wasManuallyChanged = JSON.stringify(aiRecommended.sort()) !== JSON.stringify([...userFinal].sort());
+    if (wasManuallyChanged) {
+      _ba.track('classify_correction', 'compose', 'manual_override', 0, {
+        ai_recommended: aiRecommended,
+        user_selected: userFinal,
+        content_preview: content.substring(0, 50)
+      });
+      console.log(`[分类修正] AI推荐: ${aiRecommended.join(',')} → 用户选择: ${userFinal.join(',')}`);
+    }
+    _ba.track('submit_entry', 'compose', primaryType, content.length, { has_url: detectedUrls.length > 0, tags: allTags.length, ai_types: aiRecommended, manual_override: wasManuallyChanged });
     // BUG-07 fix: Supabase POST 可能返回空数组，确保 savedEntry 有有效 id
     const savedEntry = (Array.isArray(saved) && saved.length > 0) ? saved[0] : null;
     if (!savedEntry || !savedEntry.id) {
@@ -1686,6 +2465,7 @@ async function saveLinkSummary(entryId, summaryData) {
 
 // ---- Insight (post-save) — 调用后端灵感碰撞引擎 ----
 async function generateInsight(newEntry) {
+  _ba.track('insight_trigger', 'insight', 'generate', 0, { type: newEntry.type });
   const container = document.getElementById('insightContainer');
 
   // ===== 待办类型：轻量处理，不走完整灵感碰撞 =====
@@ -1808,7 +2588,7 @@ async function generateInsight(newEntry) {
     const sources = insightData.sources || [];
 
     container.innerHTML = `
-      <div class="insight-card">
+      <div class="insight-card sparkle-entrance">
         <div class="insight-header">
           <span class="insight-icon">✨</span>
           <span class="insight-title">灵感碰撞</span>${modeBadge}
@@ -1821,6 +2601,13 @@ async function generateInsight(newEntry) {
             ${sources.map(s => `<div class="insight-related-item"><span class="insight-source-tag">[${escapeHtml(s.from)}]</span> ${escapeHtml(s.title)}</div>`).join('')}
           </div>` : ''}
       </div>`;
+    // 灵光一闪：振动 + 粒子爆炸 + 定时清除
+    if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+    const sparkleCard = container.querySelector('.sparkle-entrance');
+    if (sparkleCard) spawnSparkleParticles(sparkleCard);
+    setTimeout(() => {
+      if (sparkleCard) sparkleCard.classList.remove('sparkle-entrance');
+    }, 5000);
   } else {
     // 后端不可用，降级到本地分析
     const insight = analyzeInsight(newEntry, others);
@@ -1837,6 +2624,48 @@ async function generateInsight(newEntry) {
           ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
       </div>`;
   }
+}
+
+// ---- 灵光一闪：粒子爆炸特效 ----
+function spawnSparkleParticles(card) {
+  const emojis = ['✨', '⚡', '💡', '🌟', '✦', '◆'];
+  const rect = card.getBoundingClientRect();
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden;';
+  document.body.appendChild(container);
+
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('span');
+    p.textContent = emojis[i % emojis.length];
+    const startX = rect.left + rect.width * (0.2 + Math.random() * 0.6);
+    const startY = rect.top + rect.height * 0.3;
+    const angle = (Math.PI * 2 * i) / 12 + (Math.random() - 0.5) * 0.5;
+    const dist = 60 + Math.random() * 80;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist - 30; // 偏上
+    const dur = 0.8 + Math.random() * 0.6;
+    const size = 14 + Math.random() * 14;
+    const delay = Math.random() * 0.3;
+    p.style.cssText = `position:fixed;left:${startX}px;top:${startY}px;font-size:${size}px;pointer-events:none;z-index:9999;opacity:0;
+      animation:sparkleParticle ${dur}s ease-out ${delay}s forwards;
+      --dx:${dx}px; --dy:${dy}px;`;
+    container.appendChild(p);
+  }
+
+  // 注入 keyframes（只需注入一次）
+  if (!document.getElementById('sparkleParticleKF')) {
+    const style = document.createElement('style');
+    style.id = 'sparkleParticleKF';
+    style.textContent = `
+      @keyframes sparkleParticle {
+        0% { opacity: 1; transform: translate(0, 0) scale(0.3) rotate(0deg); }
+        30% { opacity: 1; transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.4)) scale(1.2) rotate(90deg); }
+        100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(220deg); }
+      }`;
+    document.head.appendChild(style);
+  }
+
+  setTimeout(() => container.remove(), 2000);
 }
 
 // ---- 构建模式标签 (Task 3: 降级模式透明度) ----
@@ -2030,6 +2859,7 @@ async function handleAsk() {
   const input = document.getElementById('askInput');
   const question = input.value.trim();
   if (!question) return;
+  _ba.track('ask_question', 'review', 'ask', question.length);
 
   const container = document.getElementById('answerContainer');
   const sendBtn = document.getElementById('askSend');
@@ -2631,6 +3461,7 @@ function toggleLinkSummary(btn, event) {
 // ---- Delete ----
 async function deleteEntry(id) {
   if (!confirm('确定删除？')) return;
+  _ba.track('delete_entry', 'review', 'delete');
   try {
     await fetch(`${API_BASE}/entries?id=eq.${id}`, { method: 'DELETE', headers });
     entries = entries.filter(e => e.id !== id);
@@ -2644,8 +3475,148 @@ async function deleteEntry(id) {
 }
 
 // ================================================
+// ========= TAG EDITOR（长按更改标签）=============
+// ================================================
+let _longPressTimer = null;
+let _longPressTriggered = false;
+
+function initLongPress() {
+  const listEl = document.getElementById('entryList');
+  if (!listEl) return;
+
+  listEl.addEventListener('touchstart', e => {
+    const card = e.target.closest('.entry-card');
+    if (!card || e.target.closest('.entry-delete') || e.target.closest('.link-summary-toggle')) return;
+    _longPressTriggered = false;
+    _longPressTimer = setTimeout(() => {
+      _longPressTriggered = true;
+      if (navigator.vibrate) navigator.vibrate(30);
+      openTagEditor(card.dataset.id);
+    }, 500);
+  }, { passive: true });
+
+  listEl.addEventListener('touchend', () => { clearTimeout(_longPressTimer); });
+  listEl.addEventListener('touchmove', () => { clearTimeout(_longPressTimer); });
+  listEl.addEventListener('touchcancel', () => { clearTimeout(_longPressTimer); });
+
+  // PC 端右键也可以触发
+  listEl.addEventListener('contextmenu', e => {
+    const card = e.target.closest('.entry-card');
+    if (!card) return;
+    e.preventDefault();
+    openTagEditor(card.dataset.id);
+  });
+}
+
+function openTagEditor(entryId) {
+  const entry = entries.find(e => e.id === entryId) || allEntries.find(e => e.id === entryId);
+  if (!entry) return;
+
+  const currentType = entry.type;
+  const typeLabelSet = new Set(Object.values(typeLabels));
+  const currentExtraTags = (entry.tags || []).filter(t => typeLabelSet.has(t));
+  const currentNormalTags = (entry.tags || []).filter(t => !typeLabelSet.has(t));
+
+  // 当前选中的类型集合
+  const selectedTypeSet = new Set([currentType]);
+  // 把 extra tags（如"待办"标签名）也转回 type id
+  currentExtraTags.forEach(tagLabel => {
+    const cat = CATEGORIES.find(c => c.label === tagLabel);
+    if (cat) selectedTypeSet.add(cat.id);
+  });
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tag-editor-overlay';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  function renderEditor() {
+    const chipsHtml = CATEGORIES.map(c => {
+      const sel = selectedTypeSet.has(c.id);
+      return `<button class="tag-editor-chip ${sel ? 'selected' : ''}" data-type="${c.id}">${c.emoji} ${c.label}</button>`;
+    }).join('');
+
+    overlay.innerHTML = `
+      <div class="tag-editor-panel">
+        <div class="tag-editor-header">
+          <span class="tag-editor-title">修改分类</span>
+          <button class="tag-editor-close" onclick="this.closest('.tag-editor-overlay').remove()">&times;</button>
+        </div>
+        <div class="tag-editor-section">
+          <div class="tag-editor-label">选择分类（可多选，第一个为主分类）</div>
+          <div class="tag-editor-chips">${chipsHtml}</div>
+        </div>
+        <div class="tag-editor-section">
+          <div class="tag-editor-label">内容预览</div>
+          <div style="font-size:14px;color:var(--text-secondary);line-height:1.5;max-height:80px;overflow:hidden;">
+            ${escapeHtml(entry.content.substring(0, 150))}${entry.content.length > 150 ? '...' : ''}
+          </div>
+        </div>
+        <button class="tag-editor-save" id="tagEditorSave">保存修改</button>
+      </div>`;
+
+    overlay.querySelectorAll('.tag-editor-chip').forEach(chip => {
+      chip.onclick = () => {
+        const tid = chip.dataset.type;
+        if (selectedTypeSet.has(tid)) {
+          if (selectedTypeSet.size > 1) selectedTypeSet.delete(tid);
+        } else {
+          selectedTypeSet.add(tid);
+        }
+        renderEditor();
+      };
+    });
+
+    overlay.querySelector('#tagEditorSave').onclick = () => saveTagEdit(entryId, selectedTypeSet, currentNormalTags, overlay);
+  }
+
+  renderEditor();
+  document.body.appendChild(overlay);
+}
+
+async function saveTagEdit(entryId, selectedTypeSet, normalTags, overlay) {
+  const types = Array.from(selectedTypeSet);
+  const primaryType = types[0];
+  const extraTypeTags = types.slice(1).map(t => { const c = CATEGORIES.find(c => c.id === t); return c ? c.label : t; });
+  const allTags = [...normalTags, ...extraTypeTags];
+
+  const btn = overlay.querySelector('#tagEditorSave');
+  btn.textContent = '保存中...'; btn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/entries?id=eq.${entryId}`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ type: primaryType, tags: allTags })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    // 更新本地数据
+    [entries, cachedEntries, allEntries, todoEntries].forEach(list => {
+      const found = list.find(e => e.id === entryId);
+      if (found) { found.type = primaryType; found.tags = allTags; }
+    });
+
+    overlay.remove();
+    renderEntries();
+    // 重新加载待办（分类可能变了）
+    loadTodoEntries();
+    showToast('分类已更新 ✓');
+  } catch (err) {
+    console.error('Tag edit error:', err);
+    showToast('修改失败，请重试');
+    btn.textContent = '保存修改'; btn.disabled = false;
+  }
+}
+
+// ================================================
 // ========= TODO MANAGEMENT =======================
 // ================================================
+
+// Bug3+4 fix: 判断一条记录是否为待办（type='todo' 或 tags含'待办'标签）
+function isTodoEntry(e) {
+  if (e.type === 'todo') return true;
+  if (Array.isArray(e.tags) && e.tags.some(t => t === '待办' || t === 'todo' || t === 'Todo')) return true;
+  return false;
+}
 
 let todoEntries = [];
 let todoFilter = 'pending'; // 'pending' | 'done' | 'all'
@@ -2655,7 +3626,8 @@ let todoPanelOpen = false;
 async function loadTodoEntries() {
   // 优先从已加载的 entries/allEntries 中过滤（避免额外请求失败）
   const source = allEntries.length > 0 ? allEntries : entries.length > 0 ? entries : cachedEntries;
-  let localTodos = source.filter(e => e.type === 'todo');
+  // Bug3+4 fix: 同时匹配 type==='todo' 和 tags中包含'待办'的记录
+  let localTodos = source.filter(e => isTodoEntry(e));
 
   // 如果本地已有待办数据，直接使用
   if (localTodos.length > 0) {
@@ -2717,6 +3689,7 @@ function updateTodoHubCard() {
 // 打开待办面板
 function openTodoPanel() {
   todoPanelOpen = true;
+  _ba.trackPageView('todo');
   const panel = document.getElementById('todoPanel');
   panel.style.display = 'flex';
   requestAnimationFrame(() => {
@@ -2728,6 +3701,7 @@ function openTodoPanel() {
 // 关闭待办面板
 function closeTodoPanel() {
   todoPanelOpen = false;
+  _ba.trackPageView('review');
   const panel = document.getElementById('todoPanel');
   panel.classList.remove('open');
   setTimeout(() => { panel.style.display = 'none'; }, 350);
@@ -2852,6 +3826,7 @@ async function toggleTodoDone(id, event) {
   if (!entry) return;
 
   const newDone = !entry.todo_done;
+  _ba.track(newDone ? 'todo_complete' : 'todo_reopen', 'todo', 'toggle');
   const itemEl = event.target.closest('.todo-item');
 
   // 动画
@@ -2967,9 +3942,31 @@ function initApp() {
   }
   _appInitialized = true;
   renderComposeChips(); updateIndicator(); checkHealth();
+  initLongPress(); // 需求5：初始化长按编辑标签
   fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers })
     .then(r => r.ok ? r.json() : []).then(data => { cachedEntries = data; loadTodoEntries(); }).catch(() => {});
   _healthInterval = setInterval(checkHealth, 30000);
+
+  // ---- Analytics & Feedback init ----
+  _ba.startFlush();
+  _ba.track('app_open', 'lifecycle', 'init', 0, { source: /iPhone|iPad|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop' });
+  document.getElementById('feedbackFab').style.display = 'flex';
+  // Check admin access — show admin button if admin
+  checkIsAdmin().then(isAdmin => {
+    if (isAdmin) {
+      // Add admin icon button to header
+      const headerActions = document.querySelector('.header-actions');
+      if (headerActions && !document.getElementById('adminBtn')) {
+        const btn = document.createElement('button');
+        btn.id = 'adminBtn';
+        btn.className = 'icon-btn';
+        btn.title = '管理后台';
+        btn.textContent = '📊';
+        btn.onclick = openAdmin;
+        headerActions.insertBefore(btn, headerActions.firstChild);
+      }
+    }
+  });
 }
 </script>
 </body>

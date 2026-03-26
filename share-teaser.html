@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脑瓜子 - 分享卡片</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #12121f;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  }
+  .card {
+    width: 100%; max-width: 420px;
+    background: #12121f;
+    padding: 60px 36px 50px;
+    color: white;
+  }
+  .logo { text-align: center; font-size: 64px; margin-bottom: 8px; }
+  .title { text-align: center; font-size: 52px; font-weight: 800; margin-bottom: 12px; letter-spacing: 2px; }
+  .subtitle { text-align: center; font-size: 22px; color: #3b82f6; font-weight: 600; margin-bottom: 40px; }
+
+  .quote-block {
+    border-left: 3px solid #3b82f6;
+    padding-left: 20px;
+    margin-bottom: 40px;
+  }
+  .quote-block p {
+    font-size: 17px; color: #a0a0b4; line-height: 1.8;
+  }
+
+  .divider {
+    width: 60px; height: 2px; background: #2a2a3e;
+    margin: 0 auto 36px;
+  }
+
+  .section-title {
+    text-align: center; font-size: 26px; font-weight: 700;
+    margin-bottom: 28px;
+  }
+
+  .philosophy-quote {
+    font-size: 19px; font-weight: 600; margin-bottom: 16px; line-height: 1.6;
+  }
+  .philosophy-desc {
+    font-size: 16px; color: #a0a0b4; line-height: 1.8; margin-bottom: 28px;
+  }
+  .philosophy-desc em {
+    color: white; font-style: normal; font-weight: 600;
+  }
+
+  .feature-list {
+    list-style: none; margin-bottom: 36px;
+  }
+  .feature-list li {
+    font-size: 16px; line-height: 1.6; margin-bottom: 12px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .feature-list li .dot {
+    color: #3b82f6; font-weight: 700; flex-shrink: 0;
+  }
+  .feature-list li strong {
+    color: white; font-weight: 600;
+  }
+  .feature-list li span {
+    color: #6a6a7e;
+  }
+
+  .divider2 {
+    width: 300px; height: 1px; background: #2a2a3e;
+    margin: 0 auto 28px;
+  }
+
+  .bottom-text {
+    text-align: center; margin-bottom: 12px;
+  }
+  .bottom-text .small { font-size: 17px; color: #a0a0b4; }
+  .bottom-text .big {
+    font-size: 24px; font-weight: 700; color: white; margin-top: 10px;
+  }
+
+  .cta-btn {
+    display: block; width: 280px; margin: 36px auto 0;
+    padding: 16px 0; border-radius: 50px;
+    background: #3b82f6; color: white;
+    font-size: 18px; font-weight: 600;
+    text-align: center; border: none; cursor: pointer;
+  }
+
+  .footer {
+    text-align: center; font-size: 13px; color: #3a3a4e;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🐝</div>
+  <div class="title">脑瓜子</div>
+  <div class="subtitle">ADHD 友好的外脑</div>
+
+  <div class="quote-block">
+    <p>想法冒出来的时候，打开，写下，完事。</p>
+    <p>不用选分类，不用起标题，<br>不用打开那个永远不会整理的备忘录。</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">🧩 设计哲学</div>
+
+  <div class="philosophy-quote">记录的门槛应该是零。</div>
+  <div class="philosophy-desc">
+    大多数笔记工具在追求"强大"，<br>
+    但 ADHD 的人需要的不是强大——<br>
+    <em>需要的是够轻。</em>
+  </div>
+
+  <ul class="feature-list">
+    <li><span class="dot">•</span><strong>不要标题</strong><span>— 灵感没有标题</span></li>
+    <li><span class="dot">•</span><strong>不要文件夹</strong><span>— 思绪没有边界</span></li>
+    <li><span class="dot">•</span><strong>不要选分类</strong><span>— AI 比你更快</span></li>
+    <li><span class="dot">•</span><strong>不要整理</strong><span>— 回顾的时候 AI 帮你总结</span></li>
+  </ul>
+
+  <div class="divider2"></div>
+
+  <div class="bottom-text">
+    <div class="small">你要做的只有一件事：</div>
+    <div class="big">把脑子里的东西倒出来。</div>
+  </div>
+
+  <button class="cta-btn">想体验？找我要邀请</button>
+
+  <div class="footer">脑瓜子 Buzzy · 内测中</div>
+</div>
+</body>
+</html>
