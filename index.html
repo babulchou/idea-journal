@@ -814,6 +814,20 @@
     font-size: 13px; color: var(--pink); display: none;
   }
   .auth-error.show { display: block; }
+  .auth-success {
+    background: rgba(48,209,88,0.1); border: 1px solid rgba(48,209,88,0.2);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+    font-size: 13px; color: var(--green); display: none;
+  }
+  .auth-success.show { display: block; }
+  .auth-nickname-row { position: relative; }
+  .nickname-hint {
+    font-size: 12px; margin: -8px 0 12px 4px; min-height: 16px;
+    transition: color 0.2s;
+  }
+  .nickname-hint.ok { color: var(--green); }
+  .nickname-hint.err { color: var(--pink); }
+  .nickname-hint.checking { color: var(--text-tertiary); }
   .auth-divider {
     display: flex; align-items: center; gap: 12px; margin: 20px 0;
     color: var(--text-tertiary); font-size: 12px;
@@ -1029,7 +1043,12 @@
     <div class="auth-title">脑瓜子</div>
     <div class="auth-subtitle" id="authSubtitle">登录以同步你的想法</div>
     <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
     <input class="auth-input" id="authEmail" type="email" placeholder="邮箱" autocomplete="email">
+    <div class="auth-nickname-row" id="nicknameRow" style="display:none;">
+      <input class="auth-input" id="authNickname" type="text" placeholder="昵称（2-12个字符）" autocomplete="off" maxlength="12">
+      <div class="nickname-hint" id="nicknameHint"></div>
+    </div>
     <input class="auth-input" id="authPassword" type="password" placeholder="密码（至少6位）" autocomplete="current-password">
     <button class="auth-btn" id="authBtn" onclick="handleAuth()">登 录</button>
     <div class="auth-switch" id="authSwitch">
@@ -1659,13 +1678,94 @@ function toggleAuthMode() {
     ? '已有账号？<a onclick="toggleAuthMode()">登录</a>'
     : '还没有账号？<a onclick="toggleAuthMode()">注册</a>';
   document.getElementById('authError').classList.remove('show');
+  document.getElementById('authSuccess').classList.remove('show');
   document.getElementById('authPassword').setAttribute('autocomplete', isSignUpMode ? 'new-password' : 'current-password');
+  // 昵称输入框仅注册模式显示
+  document.getElementById('nicknameRow').style.display = isSignUpMode ? '' : 'none';
+  document.getElementById('nicknameHint').textContent = '';
+  document.getElementById('nicknameHint').className = 'nickname-hint';
 }
 
 function showAuthError(msg) {
   const el = document.getElementById('authError');
   el.textContent = msg;
   el.classList.add('show');
+  document.getElementById('authSuccess').classList.remove('show');
+}
+
+function showAuthSuccess(msg) {
+  const el = document.getElementById('authSuccess');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('authError').classList.remove('show');
+}
+
+// ---- 昵称校验 ----
+const BANNED_WORDS = [
+  // 违禁词列表（黄赌毒 + 违法 + 不当内容）
+  '赌博','赌场','博彩','色情','裸体','性爱','毒品','大麻','冰毒','海洛因',
+  '可卡因','吸毒','贩毒','嫖娼','卖淫','妓女','傻逼','他妈','操你','草泥马',
+  '废物','垃圾人','狗日','贱人','婊子','鸡巴','屌','fuck','shit','bitch',
+  'porn','sex','nude','drug','cock','dick','pussy','ass','nigger','nigga',
+  'kill','murder','terrorist','admin','管理员','系统','官方','脑瓜子','buzzy',
+  '客服','运营','moderator','system','support','staff'
+];
+
+function validateNickname(nickname) {
+  const trimmed = nickname.trim();
+  if (trimmed.length < 2) return { ok: false, msg: '昵称至少 2 个字符' };
+  if (trimmed.length > 12) return { ok: false, msg: '昵称最多 12 个字符' };
+  // 只允许中文、英文、数字、下划线、短横线
+  if (!/^[\u4e00-\u9fa5a-zA-Z0-9_\-]+$/.test(trimmed)) {
+    return { ok: false, msg: '昵称只能包含中英文、数字、下划线、短横线' };
+  }
+  // 违禁词检查
+  const lower = trimmed.toLowerCase();
+  for (const word of BANNED_WORDS) {
+    if (lower.includes(word.toLowerCase())) {
+      return { ok: false, msg: '昵称包含不当内容，请换一个' };
+    }
+  }
+  return { ok: true, msg: '' };
+}
+
+let _nicknameCheckTimer = null;
+async function checkNicknameUnique(nickname) {
+  const hint = document.getElementById('nicknameHint');
+  const trimmed = nickname.trim();
+  
+  // 先做本地校验
+  const local = validateNickname(trimmed);
+  if (!local.ok) {
+    hint.textContent = local.msg;
+    hint.className = 'nickname-hint err';
+    return false;
+  }
+  
+  // 再查远程唯一性
+  hint.textContent = '检查中...';
+  hint.className = 'nickname-hint checking';
+  try {
+    const res = await fetch(
+      `${API_BASE}/user_profiles?select=id&nickname=ilike.${encodeURIComponent(trimmed)}&limit=1`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length > 0) {
+        hint.textContent = '该昵称已被使用';
+        hint.className = 'nickname-hint err';
+        return false;
+      }
+    }
+    hint.textContent = '✓ 昵称可用';
+    hint.className = 'nickname-hint ok';
+    return true;
+  } catch {
+    hint.textContent = '';
+    hint.className = 'nickname-hint';
+    return true; // 网络错误不阻止注册，后端有唯一约束兜底
+  }
 }
 
 async function handleAuth() {
@@ -1676,25 +1776,67 @@ async function handleAuth() {
   if (!email || !password) { showAuthError('请输入邮箱和密码'); return; }
   if (password.length < 6) { showAuthError('密码至少 6 位'); return; }
 
+  // 注册模式下必须填昵称
+  if (isSignUpMode) {
+    const nickname = document.getElementById('authNickname').value.trim();
+    const localCheck = validateNickname(nickname);
+    if (!localCheck.ok) { showAuthError(localCheck.msg); return; }
+  }
+
   btn.disabled = true;
   btn.textContent = isSignUpMode ? '注册中...' : '登录中...';
   document.getElementById('authError').classList.remove('show');
+  document.getElementById('authSuccess').classList.remove('show');
 
   try {
     let result;
     if (isSignUpMode) {
+      const nickname = document.getElementById('authNickname').value.trim();
+      
+      // 最终唯一性检查
+      const isUnique = await checkNicknameUnique(nickname);
+      if (!isUnique) {
+        btn.disabled = false;
+        btn.textContent = '注 册';
+        showAuthError(document.getElementById('nicknameHint').textContent || '昵称不可用');
+        return;
+      }
+
       result = await sb.auth.signUp({ email, password });
       if (result.error) throw result.error;
-      // 检查是否需要确认邮箱
+      // 检查是否邮箱已被注册
       if (result.data?.user?.identities?.length === 0) {
         showAuthError('该邮箱已被注册');
         btn.disabled = false;
         btn.textContent = '注 册';
         return;
       }
+      
+      // 注册成功后写入 user_profiles
+      if (result.data?.user) {
+        try {
+          const token = result.data.session?.access_token || SUPABASE_KEY;
+          await fetch(`${API_BASE}/user_profiles`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation'
+            },
+            body: JSON.stringify({
+              user_id: result.data.user.id,
+              nickname: nickname
+            })
+          });
+        } catch (e) {
+          console.warn('写入昵称失败，可稍后补填:', e);
+        }
+      }
+
       if (result.data?.user && !result.data.session) {
         // 需要邮箱确认
-        showAuthError('注册成功！请检查邮箱完成确认后再登录。');
+        showAuthSuccess('📮 注册成功！验证邮件已发送到 ' + email + '，请查收并点击确认链接后再登录。');
         btn.disabled = false;
         btn.textContent = '注 册';
         isSignUpMode = false;
@@ -1710,9 +1852,10 @@ async function handleAuth() {
   } catch (err) {
     const msg = err.message || '操作失败';
     const translated = msg.includes('Invalid login') ? '邮箱或密码错误'
-      : msg.includes('Email not confirmed') ? '请先确认邮箱'
+      : msg.includes('Email not confirmed') ? '📮 请先去邮箱点击确认链接，再回来登录'
       : msg.includes('already registered') ? '该邮箱已被注册'
       : msg.includes('rate limit') ? '操作太频繁，请稍后再试'
+      : msg.includes('duplicate') || msg.includes('unique') ? '该昵称已被使用，请换一个'
       : msg;
     showAuthError(translated);
     btn.disabled = false;
@@ -1735,13 +1878,32 @@ function showMainApp(user) {
   currentUser = user;
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('mainApp').style.display = '';
-  // 显示用户邮箱（只显示 @ 前的用户名，避免占太多空间）
+  // 先显示邮箱前缀，然后异步加载昵称覆盖
   const emailEl = document.getElementById('userEmail');
   const shortName = user.email.split('@')[0];
   emailEl.textContent = shortName.length > 8 ? shortName.substring(0, 8) + '..' : shortName;
   emailEl.title = user.email;
+  // 异步加载昵称
+  loadUserNickname(user.id, emailEl);
   // 初始化应用
   initApp();
+}
+
+async function loadUserNickname(userId, el) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/user_profiles?select=nickname&user_id=eq.${userId}&limit=1`,
+      { headers }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length > 0 && data[0].nickname) {
+        const nick = data[0].nickname;
+        el.textContent = nick.length > 8 ? nick.substring(0, 8) + '..' : nick;
+        el.title = nick;
+      }
+    }
+  } catch { /* 静默失败，已有邮箱前缀兜底 */ }
 }
 
 function showAuthScreen() {
@@ -1753,6 +1915,8 @@ function showAuthScreen() {
   const btn = document.getElementById('authBtn');
   btn.disabled = false;
   btn.textContent = isSignUpMode ? '注 册' : '登 录';
+  document.getElementById('authSuccess').classList.remove('show');
+  document.getElementById('nicknameRow').style.display = isSignUpMode ? '' : 'none';
 }
 
 // Listen for auth state changes
@@ -1779,8 +1943,26 @@ sb.auth.onAuthStateChange((event, session) => {
 })();
 
 // Enter key on auth inputs
-document.getElementById('authEmail').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
+document.getElementById('authEmail').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (isSignUpMode) document.getElementById('authNickname').focus();
+    else document.getElementById('authPassword').focus();
+  }
+});
+document.getElementById('authNickname').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
 document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
+
+// 昵称输入实时校验（去抖 500ms）
+document.getElementById('authNickname').addEventListener('input', e => {
+  const val = e.target.value.trim();
+  const hint = document.getElementById('nicknameHint');
+  clearTimeout(_nicknameCheckTimer);
+  if (!val) { hint.textContent = ''; hint.className = 'nickname-hint'; return; }
+  const local = validateNickname(val);
+  if (!local.ok) { hint.textContent = local.msg; hint.className = 'nickname-hint err'; return; }
+  hint.textContent = '检查中...'; hint.className = 'nickname-hint checking';
+  _nicknameCheckTimer = setTimeout(() => checkNicknameUnique(val), 500);
+});
 
 const CATEGORIES = [
   { id: 'thought', emoji: '💭', label: '想法' },

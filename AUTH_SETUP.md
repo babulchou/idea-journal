@@ -1,9 +1,11 @@
-# 随手记 — 多用户认证部署指南
+# 脑瓜子 Buzzy — 多用户认证部署指南
 
 ## 概述
 
-本次改造给随手记加了 **Supabase Auth 用户认证**，实现：
+本次改造给脑瓜子加了 **Supabase Auth 用户认证**，实现：
 - 注册 / 登录 / 退出
+- **邮箱验证** — 注册后必须去邮箱点确认链接才能登录
+- **昵称系统** — 注册时填写昵称，含违禁词过滤 + 唯一性检查
 - 每个用户只能看到自己的数据（RLS 数据隔离）
 - 现有数据可以关联到你的账号
 
@@ -17,14 +19,23 @@
    - 进入 **Authentication** → **Providers**
    - 确认 **Email** 是启用状态
 
-3. **（推荐）关闭邮箱确认**（让注册更丝滑）：
+3. **⚠️ 开启邮箱验证**：
    - 进入 **Authentication** → **Settings** → **Auth Settings**
-   - 找到 **"Confirm email"**，关闭它
-   - 这样用户注册后可以直接登录，不需要去邮箱点确认链接
+   - 找到 **"Confirm email"**，**开启**它
+   - 这样用户注册后必须去邮箱点确认链接才能登录
 
-4. **执行数据库迁移**：
+4. **（可选）自定义确认邮件模板**：
+   - 进入 **Authentication** → **Email Templates** → **"Confirm signup"**
+   - 可以改成中文内容，例如：
+   ```
+   主题：🐝 脑瓜子 — 确认你的邮箱
+   内容：点击下面的链接确认你的邮箱：{{ .ConfirmationURL }}
+   ```
+
+5. **执行数据库迁移**：
    - 进入 **SQL Editor**
-   - 粘贴 `migration.sql` 的全部内容并执行
+   - 先执行 `migration.sql`（如果还没执行过）
+   - 再执行 `nickname_migration.sql`（创建 user_profiles 表）
    - ⚠️ 先不要执行 Step 2（`UPDATE entries SET user_id = ...`），等注册完再做
 
 ### Step 2: 注册你的账号 + 关联老数据
