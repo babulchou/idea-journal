@@ -142,33 +142,36 @@
   }
   /* 灵光一闪特效 */
   .insight-card.sparkle-entrance {
-    animation: sparkleIn 1s cubic-bezier(0.32, 0.72, 0, 1);
+    animation: sparkleIn 1.2s cubic-bezier(0.32, 0.72, 0, 1);
     position: relative;
-    border-color: rgba(255,215,0,0.5) !important;
+    border-color: rgba(255,215,0,0.6) !important;
   }
-  /* 金色发光脉冲边框 */
+  /* 金色发光脉冲边框（加强版） */
   .insight-card.sparkle-entrance {
-    box-shadow: 0 0 15px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.1), inset 0 0 15px rgba(255,215,0,0.05);
-    animation: sparkleIn 1s cubic-bezier(0.32, 0.72, 0, 1), sparkleGlow 1.5s ease-in-out 0.8s 2;
+    box-shadow: 0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.15), 0 0 80px rgba(191,90,242,0.1), inset 0 0 20px rgba(255,215,0,0.08);
+    animation: sparkleIn 1.2s cubic-bezier(0.32, 0.72, 0, 1), sparkleGlow 1.5s ease-in-out 1s 3;
   }
   @keyframes sparkleIn {
-    0% { opacity: 0; transform: translateY(24px) scale(0.92); box-shadow: 0 0 0 rgba(255,215,0,0); border-color: transparent; }
-    30% { opacity: 1; transform: translateY(-6px) scale(1.03); box-shadow: 0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.2); border-color: rgba(255,215,0,0.6); }
-    50% { transform: translateY(2px) scale(1); box-shadow: 0 0 40px rgba(191,90,242,0.3), 0 0 15px rgba(255,215,0,0.3); }
-    100% { transform: translateY(0) scale(1); box-shadow: 0 0 15px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.1), inset 0 0 15px rgba(255,215,0,0.05); }
+    0% { opacity: 0; transform: translateY(30px) scale(0.88); box-shadow: 0 0 0 rgba(255,215,0,0); border-color: transparent; }
+    20% { opacity: 1; transform: translateY(-10px) scale(1.05); box-shadow: 0 0 40px rgba(255,215,0,0.6), 0 0 80px rgba(255,215,0,0.3); border-color: rgba(255,215,0,0.8); }
+    40% { transform: translateY(4px) scale(0.98); box-shadow: 0 0 50px rgba(191,90,242,0.4), 0 0 20px rgba(255,215,0,0.4); }
+    60% { transform: translateY(-2px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); box-shadow: 0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.15), inset 0 0 20px rgba(255,215,0,0.08); }
   }
   @keyframes sparkleGlow {
-    0%, 100% { box-shadow: 0 0 15px rgba(255,215,0,0.3), 0 0 30px rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.4); }
-    50% { box-shadow: 0 0 25px rgba(255,215,0,0.5), 0 0 50px rgba(191,90,242,0.2); border-color: rgba(255,215,0,0.7); }
+    0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.15); border-color: rgba(255,215,0,0.5); }
+    50% { box-shadow: 0 0 35px rgba(255,215,0,0.6), 0 0 70px rgba(191,90,242,0.3), 0 0 100px rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.8); }
   }
-  /* 灵感闪光背景脉冲 */
+  /* 灵感闪光背景脉冲 — icon 弹跳加强 */
   .insight-card.sparkle-entrance .insight-header .insight-icon {
-    animation: iconPulse 0.8s ease-in-out 0.2s;
+    animation: iconPulse 1s ease-in-out 0.2s;
   }
   @keyframes iconPulse {
-    0%, 100% { transform: scale(1); }
-    30% { transform: scale(1.8) rotate(-10deg); }
-    60% { transform: scale(1.4) rotate(5deg); }
+    0%, 100% { transform: scale(1) rotate(0); }
+    20% { transform: scale(2) rotate(-15deg); }
+    40% { transform: scale(1.5) rotate(10deg); }
+    60% { transform: scale(1.8) rotate(-5deg); }
+    80% { transform: scale(1.2) rotate(3deg); }
   }
   /* 顶部闪光条 */
   .insight-card.sparkle-entrance .insight-header::after {
@@ -1315,10 +1318,17 @@ const _ba = (() => {
     });
     window.addEventListener('beforeunload', () => {
       track('page_duration', 'navigation', currentPage, Date.now() - pageEnterTime);
-      // Use sendBeacon for reliable final flush
+      // Use fetch keepalive for reliable final flush (preserves full auth headers, unlike sendBeacon)
       if (queue.length > 0 && currentUser) {
         const body = JSON.stringify(queue);
-        navigator.sendBeacon?.(`${API_BASE}/analytics_events?apikey=${SUPABASE_KEY}`, new Blob([body], { type: 'application/json' }));
+        try {
+          fetch(`${API_BASE}/analytics_events`, {
+            method: 'POST', headers, body, keepalive: true
+          });
+        } catch {
+          // keepalive fetch failed, fallback to sendBeacon (best-effort, no auth header)
+          navigator.sendBeacon?.(`${API_BASE}/analytics_events?apikey=${SUPABASE_KEY}`, new Blob([body], { type: 'application/json' }));
+        }
         queue = [];
       }
     });
@@ -2284,7 +2294,7 @@ function parseXhsShareText(fullText) {
 
 // ---- Link Parser API ----
 const LINK_PARSER_API = 'https://link-parser-api.onrender.com'; // 部署后的地址（HTTPS，GitHub Pages 兼容）
-const LINK_PARSER_TENCENT = 'http://81.71.120.8:8900'; // 腾讯云服务器（HTTP，仅本地/非HTTPS环境可用）
+const LINK_PARSER_TENCENT = 'http://81.71.120.8'; // 腾讯云服务器（Nginx 反代 → 8900，仅非HTTPS环境可用）
 const LINK_PARSER_LOCAL = 'http://localhost:8900'; // 本地调试
 
 // 判断当前是否在 HTTPS 环境（GitHub Pages 等），HTTPS 页面无法调用 HTTP API（Mixed Content）
@@ -2531,7 +2541,7 @@ async function generateInsightWithLink(savedEntry, url) {
   for (const base of inspireEndpoints2) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const historyForApi = others.slice(0, 8).map(e => ({
         content: e.content.substring(0, 200),
         type: e.type,
@@ -2650,7 +2660,7 @@ async function generateInsight(newEntry) {
   _ba.track('insight_trigger', 'insight', 'generate', 0, { type: newEntry.type });
   const container = document.getElementById('insightContainer');
 
-  // ===== 待办类型：轻量处理，不走完整灵感碰撞 =====
+  // ===== 待办类型：先快速确认，再异步走灵感碰撞 =====
   if (newEntry.type === 'todo') {
     const todoTips = [
       '已加入待办清单，记下来就是执行力的第一步。',
@@ -2660,7 +2670,6 @@ async function generateInsight(newEntry) {
       '又多了一项待办，保持节奏逐个击破。',
     ];
     const tip = todoTips[Math.floor(Math.random() * todoTips.length)];
-    // 从历史记录中找相关的待办（仅关键词匹配，不遍历全部）
     const newWords = extractKeywords(newEntry.content);
     const relatedTodos = (cachedEntries || [])
       .filter(e => e.type === 'todo' && e.id !== newEntry.id)
@@ -2678,8 +2687,9 @@ async function generateInsight(newEntry) {
       relatedHtml = `<div class="insight-related"><div class="insight-related-label">相关待办</div>${items}</div>`;
     }
 
+    // 先快速展示待办确认
     container.innerHTML = `
-      <div class="insight-card">
+      <div class="insight-card" id="todoInsightCard">
         <div class="insight-header">
           <span class="insight-icon">✅</span>
           <span class="insight-title">待办确认</span>
@@ -2687,7 +2697,13 @@ async function generateInsight(newEntry) {
         </div>
         <div class="insight-body">${tip}</div>
         ${relatedHtml}
+        <div id="todoInsightAppend" style="margin-top:10px;"></div>
       </div>`;
+
+    // 如果内容足够长（>8字符），也有 tags 含非待办标签，异步触发 AI 碰撞
+    if (newEntry.content.length > 8 || (newEntry.tags && newEntry.tags.some(t => t !== '待办'))) {
+      _todoAsyncInspire(newEntry);
+    }
     return;
   }
 
@@ -2704,13 +2720,15 @@ async function generateInsight(newEntry) {
       </div>
     </div>`;
 
-  // 5 秒后如果还没返回，提示用户可以先继续记录
+  // 5 秒后提示服务唤醒，10 秒后提示可继续记录
   const hintTimer = setTimeout(() => {
     const phaseText = document.getElementById('insightPhaseText');
-    if (phaseText) {
-      phaseText.textContent = 'AI 生成中... 可以先继续记录，碰撞结果会稍后出现';
-    }
+    if (phaseText) phaseText.textContent = '正在唤醒 AI 服务...（首次可能需要 20 秒）';
   }, 5000);
+  const hintTimer2 = setTimeout(() => {
+    const phaseText = document.getElementById('insightPhaseText');
+    if (phaseText) phaseText.textContent = 'AI 还在努力中... 可以先继续记录，结果会自动出现';
+  }, 12000);
 
   // 加载历史记录用于碰撞（BUG-06 fix: 使用本地快照，避免 loadEntries 竞态覆盖）
   let insightHistory = [...cachedEntries]; // 快照，不受 loadEntries 影响
@@ -2721,6 +2739,35 @@ async function generateInsight(newEntry) {
     }
   } catch {}
   const others = insightHistory.filter(e => e.id !== newEntry.id);
+
+  // ===== 首条记录特殊处理：热情欢迎，不走 AI =====
+  if (others.length === 0) {
+    clearTimeout(hintTimer);
+    clearTimeout(hintTimer2);
+    const firstEntryMessages = [
+      '🎉 欢迎来到脑瓜子！这是你的第一条记录，从此再也不会忘掉脑子里冒出来的东西了。',
+      '🎊 第一条记录诞生了！脑瓜子会帮你记住一切，放心大胆地写吧。',
+      '🚀 迈出了第一步！随着记录积累，灵感碰撞会越来越精彩。',
+      '✨ 太好了，开始记录了！等你写多了，AI 会帮你发现想法之间的隐藏联系。',
+      '🧠 第一条想法已入库！继续记录，脑瓜子会越来越懂你。',
+    ];
+    const msg = firstEntryMessages[Math.floor(Math.random() * firstEntryMessages.length)];
+    container.innerHTML = `
+      <div class="insight-card encouragement sparkle-entrance">
+        <div class="insight-header">
+          <span class="insight-icon">🎉</span>
+          <span class="insight-title">欢迎使用脑瓜子！</span>
+          <button class="insight-close" onclick="this.closest('.insight-card').remove()">&times;</button>
+        </div>
+        <div class="insight-body" style="font-size:15px;">${msg}</div>
+      </div>`;
+    const sparkleCard = container.querySelector('.sparkle-entrance');
+    if (sparkleCard) spawnSparkleParticles(sparkleCard);
+    if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+    setTimeout(() => { if (sparkleCard) sparkleCard.classList.remove('sparkle-entrance'); }, 5000);
+    return;
+  }
+
   // 安全更新 cachedEntries（仅添加新条目，不覆盖整体）
   if (newEntry.id && !cachedEntries.some(e => e.id === newEntry.id)) {
     cachedEntries.unshift(newEntry);
@@ -2731,7 +2778,7 @@ async function generateInsight(newEntry) {
   const phaseEl = document.getElementById('insightPhaseText');
   if (phaseEl) phaseEl.textContent = 'AI 生成中...';
 
-  // 调用后端灵感引擎（缩短超时到 15 秒）
+  // 调用后端灵感引擎（Render 冷启动可能需 20s+，超时设 30s）
   let insightData = null;
   const inspireEndpoints = IS_SECURE_CONTEXT
     ? [LINK_PARSER_API]
@@ -2739,7 +2786,7 @@ async function generateInsight(newEntry) {
   for (const base of inspireEndpoints) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const historyForApi = others.slice(0, 8).map(e => ({
         content: e.content.substring(0, 200),
         type: e.type,
@@ -2763,6 +2810,7 @@ async function generateInsight(newEntry) {
   }
 
   clearTimeout(hintTimer);
+  clearTimeout(hintTimer2);
 
   if (insightData && insightData.insight) {
     // 后端返回了灵感碰撞结果
@@ -2810,29 +2858,57 @@ async function generateInsight(newEntry) {
 
 // ---- 灵光一闪：粒子爆炸特效 ----
 function spawnSparkleParticles(card) {
-  const emojis = ['✨', '⚡', '💡', '🌟', '✦', '◆'];
+  const emojis = ['✨', '⚡', '💡', '🌟', '✦', '◆', '🔥', '💫'];
   const rect = card.getBoundingClientRect();
   const container = document.createElement('div');
   container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden;';
   document.body.appendChild(container);
 
-  for (let i = 0; i < 12; i++) {
+  // 全屏闪光效果
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;' +
+    'background:radial-gradient(circle at 50% 40%, rgba(255,215,0,0.25), rgba(191,90,242,0.08) 50%, transparent 70%);' +
+    'animation:screenFlash 0.8s ease-out forwards;';
+  container.appendChild(flash);
+
+  // 第一波：20 颗主粒子（大爆炸）
+  for (let i = 0; i < 20; i++) {
     const p = document.createElement('span');
     p.textContent = emojis[i % emojis.length];
-    const startX = rect.left + rect.width * (0.2 + Math.random() * 0.6);
+    const startX = rect.left + rect.width * (0.15 + Math.random() * 0.7);
     const startY = rect.top + rect.height * 0.3;
-    const angle = (Math.PI * 2 * i) / 12 + (Math.random() - 0.5) * 0.5;
-    const dist = 60 + Math.random() * 80;
+    const angle = (Math.PI * 2 * i) / 20 + (Math.random() - 0.5) * 0.4;
+    const dist = 80 + Math.random() * 120;
     const dx = Math.cos(angle) * dist;
-    const dy = Math.sin(angle) * dist - 30; // 偏上
-    const dur = 0.8 + Math.random() * 0.6;
-    const size = 14 + Math.random() * 14;
-    const delay = Math.random() * 0.3;
+    const dy = Math.sin(angle) * dist - 50;
+    const dur = 1.0 + Math.random() * 0.8;
+    const size = 16 + Math.random() * 18;
+    const delay = Math.random() * 0.25;
     p.style.cssText = `position:fixed;left:${startX}px;top:${startY}px;font-size:${size}px;pointer-events:none;z-index:9999;opacity:0;
       animation:sparkleParticle ${dur}s ease-out ${delay}s forwards;
       --dx:${dx}px; --dy:${dy}px;`;
     container.appendChild(p);
   }
+
+  // 第二波：8 颗延迟涟漪粒子（更远更慢）
+  setTimeout(() => {
+    for (let i = 0; i < 8; i++) {
+      const p = document.createElement('span');
+      p.textContent = ['✨', '🌟', '💫', '⭐'][i % 4];
+      const startX = rect.left + rect.width * 0.5 + (Math.random() - 0.5) * rect.width * 0.6;
+      const startY = rect.top + rect.height * 0.2;
+      const angle = (Math.PI * 2 * i) / 8 + (Math.random() - 0.5) * 0.6;
+      const dist = 120 + Math.random() * 80;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 60;
+      const dur = 1.2 + Math.random() * 0.6;
+      const size = 12 + Math.random() * 10;
+      p.style.cssText = `position:fixed;left:${startX}px;top:${startY}px;font-size:${size}px;pointer-events:none;z-index:9999;opacity:0;
+        animation:sparkleParticle ${dur}s ease-out forwards;
+        --dx:${dx}px; --dy:${dy}px;`;
+      container.appendChild(p);
+    }
+  }, 300);
 
   // 注入 keyframes（只需注入一次）
   if (!document.getElementById('sparkleParticleKF')) {
@@ -2840,17 +2916,84 @@ function spawnSparkleParticles(card) {
     style.id = 'sparkleParticleKF';
     style.textContent = `
       @keyframes sparkleParticle {
-        0% { opacity: 1; transform: translate(0, 0) scale(0.3) rotate(0deg); }
-        30% { opacity: 1; transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.4)) scale(1.2) rotate(90deg); }
-        100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(220deg); }
+        0% { opacity: 1; transform: translate(0, 0) scale(0.2) rotate(0deg); }
+        20% { opacity: 1; transform: translate(calc(var(--dx) * 0.3), calc(var(--dy) * 0.3)) scale(1.4) rotate(60deg); }
+        60% { opacity: 0.8; transform: translate(calc(var(--dx) * 0.7), calc(var(--dy) * 0.7)) scale(1) rotate(160deg); }
+        100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(280deg); }
+      }
+      @keyframes screenFlash {
+        0% { opacity: 1; }
+        100% { opacity: 0; }
       }`;
     document.head.appendChild(style);
   }
 
-  setTimeout(() => container.remove(), 2000);
+  setTimeout(() => container.remove(), 3000);
 }
 
-// ---- 构建模式标签 (Task 3: 降级模式透明度) ----
+// ---- 待办异步灵感碰撞（问题2：待办类型也要碰撞）----
+async function _todoAsyncInspire(newEntry) {
+  const appendEl = document.getElementById('todoInsightAppend');
+  if (!appendEl) return;
+
+  let insightHistory = [...cachedEntries];
+  try {
+    if (insightHistory.length === 0) {
+      const res = await fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers });
+      if (res.ok) insightHistory = await res.json();
+    }
+  } catch {}
+  const others = insightHistory.filter(e => e.id !== newEntry.id);
+
+  let insightData = null;
+  const endpoints = IS_SECURE_CONTEXT
+    ? [LINK_PARSER_API]
+    : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  for (const base of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      const historyForApi = others.slice(0, 8).map(e => ({
+        content: e.content.substring(0, 200), type: e.type,
+      }));
+      const res = await fetch(`${base}/inspire`, {
+        method: 'POST', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newEntry.content, type: newEntry.type, history: historyForApi }),
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        insightData = await res.json();
+        if (insightData && insightData.insight) break;
+      }
+    } catch { continue; }
+  }
+
+  if (!document.getElementById('todoInsightAppend')) return; // 卡片已被关闭
+
+  if (insightData && insightData.insight) {
+    const modeBadge = buildModeBadge(insightData);
+    const sources = insightData.sources || [];
+    appendEl.innerHTML = `
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="font-size:14px;">💡</span>
+          <span style="font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">灵感碰撞</span>${modeBadge}
+        </div>
+        <div class="insight-body">${formatInsightText(insightData.insight)}</div>
+        ${sources.length > 0 ? `<div class="insight-related"><div class="insight-related-label">碰撞来源</div>
+          ${sources.map(s => `<div class="insight-related-item"><span class="insight-source-tag">[${escapeHtml(s.from)}]</span> ${escapeHtml(s.title)}</div>`).join('')}</div>` : ''}
+      </div>`;
+    // 触发 sparkle 特效
+    const card = document.getElementById('todoInsightCard');
+    if (card) {
+      card.classList.add('sparkle-entrance');
+      spawnSparkleParticles(card);
+      if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+      setTimeout(() => card.classList.remove('sparkle-entrance'), 5000);
+    }
+  }
+}
 function buildModeBadge(data) {
   const hasKB = data.has_knowledge;
   const hasNotes = data.has_notes;
