@@ -2538,30 +2538,36 @@ async function generateInsightWithLink(savedEntry, url) {
   const inspireEndpoints2 = IS_SECURE_CONTEXT
     ? [LINK_PARSER_API]
     : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  const inspireBody2 = JSON.stringify({
+    content: savedEntry.content,
+    type: savedEntry.type,
+    history: others.slice(0, 8).map(e => ({ content: e.content.substring(0, 200), type: e.type })),
+  });
   for (const base of inspireEndpoints2) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-      const historyForApi = others.slice(0, 8).map(e => ({
-        content: e.content.substring(0, 200),
-        type: e.type,
-      }));
-      const res = await fetch(`${base}/inspire`, {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: savedEntry.content,
-          type: savedEntry.type,
-          history: historyForApi,
-        }),
-      });
-      clearTimeout(timeout);
-      if (res.ok) {
-        insightData = await res.json();
-        if (insightData && insightData.insight) break;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutMs = attempt === 0 ? 45000 : 30000;
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        console.log(`[灵感碰撞-链接] 尝试 ${base} (attempt ${attempt + 1})`);
+        const res = await fetch(`${base}/inspire`, {
+          method: 'POST', signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: inspireBody2,
+        });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const text = await res.text();
+          try { insightData = JSON.parse(text); } catch { console.error('[灵感碰撞-链接] JSON 解析失败'); continue; }
+          if (insightData && insightData.insight) break;
+        }
+      } catch (err) {
+        console.warn(`[灵感碰撞-链接] ${base} attempt ${attempt + 1} 失败:`, err.name);
+        if (err.name === 'AbortError' && attempt === 0) continue;
+        break;
       }
-    } catch { continue; }
+    }
+    if (insightData && insightData.insight) break;
   }
 
   // 如果后端灵感引擎不可用，降级到本地分析
@@ -2658,6 +2664,7 @@ async function saveLinkSummary(entryId, summaryData) {
 // ---- Insight (post-save) — 调用后端灵感碰撞引擎 ----
 async function generateInsight(newEntry) {
   _ba.track('insight_trigger', 'insight', 'generate', 0, { type: newEntry.type });
+  window._lastInsightEntry = newEntry; // 用于重试按钮
   const container = document.getElementById('insightContainer');
 
   // ===== 待办类型：先快速确认，再异步走灵感碰撞 =====
@@ -2720,15 +2727,19 @@ async function generateInsight(newEntry) {
       </div>
     </div>`;
 
-  // 5 秒后提示服务唤醒，10 秒后提示可继续记录
+  // 5 秒后提示服务唤醒，12 秒后提示可继续记录，25 秒后提示即将降级
   const hintTimer = setTimeout(() => {
     const phaseText = document.getElementById('insightPhaseText');
-    if (phaseText) phaseText.textContent = '正在唤醒 AI 服务...（首次可能需要 20 秒）';
+    if (phaseText) phaseText.textContent = '正在唤醒 AI 服务...（首次可能需要 30 秒）';
   }, 5000);
   const hintTimer2 = setTimeout(() => {
     const phaseText = document.getElementById('insightPhaseText');
     if (phaseText) phaseText.textContent = 'AI 还在努力中... 可以先继续记录，结果会自动出现';
   }, 12000);
+  const hintTimer3 = setTimeout(() => {
+    const phaseText = document.getElementById('insightPhaseText');
+    if (phaseText) phaseText.textContent = 'AI 服务唤醒较慢，正在重试...';
+  }, 30000);
 
   // 加载历史记录用于碰撞（BUG-06 fix: 使用本地快照，避免 loadEntries 竞态覆盖）
   let insightHistory = [...cachedEntries]; // 快照，不受 loadEntries 影响
@@ -2744,6 +2755,7 @@ async function generateInsight(newEntry) {
   if (others.length === 0) {
     clearTimeout(hintTimer);
     clearTimeout(hintTimer2);
+    clearTimeout(hintTimer3);
     const firstEntryMessages = [
       '🎉 欢迎来到脑瓜子！这是你的第一条记录，从此再也不会忘掉脑子里冒出来的东西了。',
       '🎊 第一条记录诞生了！脑瓜子会帮你记住一切，放心大胆地写吧。',
@@ -2778,39 +2790,71 @@ async function generateInsight(newEntry) {
   const phaseEl = document.getElementById('insightPhaseText');
   if (phaseEl) phaseEl.textContent = 'AI 生成中...';
 
-  // 调用后端灵感引擎（Render 冷启动可能需 20s+，超时设 30s）
+  // 调用后端灵感引擎（Render 冷启动可能需 30s+，超时设 45s，带重试）
   let insightData = null;
   const inspireEndpoints = IS_SECURE_CONTEXT
     ? [LINK_PARSER_API]
     : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  const historyForApi = others.slice(0, 8).map(e => ({
+    content: e.content.substring(0, 200),
+    type: e.type,
+  }));
+  const inspireBody = JSON.stringify({
+    content: newEntry.content,
+    type: newEntry.type,
+    history: historyForApi,
+  });
+
   for (const base of inspireEndpoints) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-      const historyForApi = others.slice(0, 8).map(e => ({
-        content: e.content.substring(0, 200),
-        type: e.type,
-      }));
-      const res = await fetch(`${base}/inspire`, {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: newEntry.content,
-          type: newEntry.type,
-          history: historyForApi,
-        }),
-      });
-      clearTimeout(timeout);
-      if (res.ok) {
-        insightData = await res.json();
-        if (insightData && insightData.insight) break;
+    // 每个端点尝试最多 2 次（首次可能是冷启动唤醒）
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutMs = attempt === 0 ? 45000 : 30000;
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        console.log(`[灵感碰撞] 尝试 ${base} (attempt ${attempt + 1}, timeout ${timeoutMs/1000}s)`);
+        const res = await fetch(`${base}/inspire`, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: inspireBody,
+        });
+        clearTimeout(timeout);
+        console.log(`[灵感碰撞] ${base} 响应: ${res.status}`);
+        if (res.ok) {
+          const text = await res.text();
+          try {
+            insightData = JSON.parse(text);
+          } catch (parseErr) {
+            console.error('[灵感碰撞] JSON 解析失败:', parseErr, '原始响应:', text.substring(0, 200));
+            continue;
+          }
+          if (insightData && insightData.insight) {
+            console.log('[灵感碰撞] AI 成功返回', insightData.has_ai ? 'AI模式' : '规则模式');
+            break;
+          } else {
+            console.warn('[灵感碰撞] 响应无 insight 字段:', JSON.stringify(insightData).substring(0, 200));
+          }
+        } else {
+          console.warn(`[灵感碰撞] ${base} HTTP ${res.status}`);
+        }
+      } catch (err) {
+        console.warn(`[灵感碰撞] ${base} attempt ${attempt + 1} 失败:`, err.name, err.message);
+        // 如果是 AbortError（超时）且是第一次尝试，重试一次
+        if (err.name === 'AbortError' && attempt === 0) {
+          console.log('[灵感碰撞] 超时，可能是冷启动，重试中...');
+          if (phaseEl) phaseEl.textContent = '服务唤醒中，再试一次...';
+          continue;
+        }
+        break; // 非超时错误直接换下一个端点
       }
-    } catch { continue; }
+    }
+    if (insightData && insightData.insight) break;
   }
 
   clearTimeout(hintTimer);
   clearTimeout(hintTimer2);
+  clearTimeout(hintTimer3);
 
   if (insightData && insightData.insight) {
     // 后端返回了灵感碰撞结果
@@ -2840,6 +2884,7 @@ async function generateInsight(newEntry) {
     }, 5000);
   } else {
     // 后端不可用，降级到本地分析
+    console.warn('[灵感碰撞] AI 未返回结果，降级到本地分析。insightData:', insightData);
     const insight = analyzeInsight(newEntry, others);
     const localModeBadge = '<span class="insight-mode-badge mode-local">本地分析</span>';
     container.innerHTML = `
@@ -2852,6 +2897,12 @@ async function generateInsight(newEntry) {
         ${insight.related && insight.related.length > 0 ? `
           <div class="insight-related"><div class="insight-related-label">关联记录</div>
           ${insight.related.map(r => `<div class="insight-related-item">${escapeHtml(r)}</div>`).join('')}</div>` : ''}
+        <div style="margin-top:8px;text-align:center;">
+          <button onclick="this.disabled=true;this.textContent='重试中...';generateInsight(window._lastInsightEntry||{})" 
+            style="background:none;border:1px solid rgba(255,255,255,0.15);color:var(--text-secondary);padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;">
+            🔄 AI 服务可能在休眠，点击重试
+          </button>
+        </div>
       </div>`;
   }
 }
@@ -2949,24 +3000,35 @@ async function _todoAsyncInspire(newEntry) {
   const endpoints = IS_SECURE_CONTEXT
     ? [LINK_PARSER_API]
     : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  const todoBody = JSON.stringify({
+    content: newEntry.content, type: newEntry.type,
+    history: others.slice(0, 8).map(e => ({ content: e.content.substring(0, 200), type: e.type })),
+  });
   for (const base of endpoints) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-      const historyForApi = others.slice(0, 8).map(e => ({
-        content: e.content.substring(0, 200), type: e.type,
-      }));
-      const res = await fetch(`${base}/inspire`, {
-        method: 'POST', signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newEntry.content, type: newEntry.type, history: historyForApi }),
-      });
-      clearTimeout(timeout);
-      if (res.ok) {
-        insightData = await res.json();
-        if (insightData && insightData.insight) break;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutMs = attempt === 0 ? 45000 : 30000;
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        console.log(`[灵感碰撞-待办] 尝试 ${base} (attempt ${attempt + 1})`);
+        const res = await fetch(`${base}/inspire`, {
+          method: 'POST', signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: todoBody,
+        });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const text = await res.text();
+          try { insightData = JSON.parse(text); } catch { console.error('[灵感碰撞-待办] JSON解析失败'); continue; }
+          if (insightData && insightData.insight) break;
+        }
+      } catch (err) {
+        console.warn(`[灵感碰撞-待办] ${base} attempt ${attempt + 1} 失败:`, err.name);
+        if (err.name === 'AbortError' && attempt === 0) continue;
+        break;
       }
-    } catch { continue; }
+    }
+    if (insightData && insightData.insight) break;
   }
 
   if (!document.getElementById('todoInsightAppend')) return; // 卡片已被关闭
@@ -4271,6 +4333,12 @@ function initApp() {
   fetch(`${API_BASE}/entries?select=*&order=created_at.desc&limit=30`, { headers })
     .then(r => r.ok ? r.json() : []).then(data => { cachedEntries = data; loadTodoEntries(); }).catch(() => {});
   _healthInterval = setInterval(checkHealth, 30000);
+  // 预热 Render 后端（免费版会休眠，提前唤醒避免灵感碰撞超时）
+  fetch(`${LINK_PARSER_API}/health`, { method: 'GET' }).then(r => {
+    console.log(`[预热] Render 后端状态: ${r.status}`);
+  }).catch(() => {
+    console.log('[预热] Render 后端未响应，可能在冷启动中');
+  });
 
   // ---- Analytics & Feedback init ----
   _ba.startFlush();
