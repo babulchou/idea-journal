@@ -2266,6 +2266,8 @@ async function handleSubmit(skipDuplicateCheck) {
         showToast('已记录 ✓');
         generateInsight(fallbackEntry);
       }
+      // 后台静默同步到 IMA 笔记本（即使没有 id 也同步内容）
+      syncEntryToIMA(fallbackEntry);
     } else {
       // If URL detected — main feedback is link content reading
       if (detectedUrls.length > 0) {
@@ -2275,12 +2277,51 @@ async function handleSubmit(skipDuplicateCheck) {
         showToast('已记录 ✓');
         generateInsight(savedEntry);
       }
+      // 后台静默同步到 IMA 笔记本（不阻塞 UI）
+      syncEntryToIMA(savedEntry);
     }
   } catch (err) {
     console.error('Save error:', err);
     showToast('保存失败，请检查网络');
     btn.disabled = false; btn.textContent = '记下来';
   }
+}
+
+// ---- IMA 同步：后台静默将记录同步到 IMA 笔记本 ----
+async function syncEntryToIMA(entry) {
+  if (!entry || !entry.content) return;
+  const endpoints = IS_SECURE_CONTEXT
+    ? [LINK_PARSER_API]
+    : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  const body = JSON.stringify({
+    content: entry.content,
+    type: entry.type || 'thought',
+    tags: entry.tags || [],
+    entry_id: entry.id || '',
+    created_at: entry.created_at || new Date().toISOString(),
+  });
+  for (const base of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${base}/sync-to-ima`, {
+        method: 'POST', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) {
+          console.log(`[IMA同步] ✅ 已归档到「${data.folder}」, doc_id=${data.doc_id}`);
+          return;
+        }
+      }
+    } catch (e) {
+      console.log(`[IMA同步] ${base} 失败:`, e.message);
+    }
+  }
+  console.log('[IMA同步] 所有端点均失败，跳过');
 }
 
 // ---- URL Extraction ----
@@ -3450,7 +3491,7 @@ async function handleAsk() {
   // Don't clear input so user can refine
 }
 
-// ---- Search Mode: Find and highlight records ----
+// ---- Search Mode: Find and highlight records + IMA 知识库搜索 ----
 function renderSearchAnswer(question, container) {
   const questionKW = extractKeywords(question);
   const questionLower = question.toLowerCase();
@@ -3489,52 +3530,99 @@ function renderSearchAnswer(question, container) {
     return { entry: e, score, matchedWords: [...new Set(matchedWords)] };
   }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
 
-  if (scored.length === 0) {
-    container.innerHTML = `
-      <div class="answer-panel search-mode">
-        <div class="answer-intent">
-          <span class="answer-intent-icon">🔍</span>
-          <span class="answer-intent-label">搜索记录</span>
-          <button class="answer-close" onclick="closeAnswer()">&times;</button>
+  const topResults = scored.slice(0, 5);
+  const localCount = scored.length;
+
+  // 先渲染本地搜索结果（快速响应）
+  const resultHtml = topResults.length > 0 ? topResults.map((s, i) => {
+    const e = s.entry;
+    const date = new Date(e.created_at);
+    const timeStr = formatTime(date);
+    const highlighted = highlightText(e.content, s.matchedWords);
+    const relevance = Math.min(100, Math.round(s.score / topResults[0].score * 100));
+    return `
+      <div class="search-result-item" onclick="scrollToEntry('${e.id}')">
+        <div class="search-result-header">
+          <span class="search-result-badge ${e.type}">${typeLabels[e.type] || e.type}</span>
+          <span class="search-result-time">${timeStr}</span>
         </div>
-        <div style="padding: 20px 16px; text-align: center; color: var(--text-tertiary); font-size: 14px;">
-          没找到相关记录，试试换个关键词？
+        <div class="search-result-content">${highlighted}</div>
+        <div class="search-result-score">
+          <span style="color:var(--accent);">●</span> 相关度 ${relevance}%
         </div>
       </div>`;
-    return;
-  }
-
-  const topResults = scored.slice(0, 5);
+  }).join('') : `<div style="padding: 12px 16px; color: var(--text-tertiary); font-size: 13px;">本地记录中未找到</div>`;
 
   container.innerHTML = `
     <div class="answer-panel search-mode">
       <div class="answer-intent">
         <span class="answer-intent-icon">🔍</span>
-        <span class="answer-intent-label">找到 ${scored.length} 条相关记录</span>
+        <span class="answer-intent-label">${localCount > 0 ? `找到 ${localCount} 条记录` : '搜索中...'}</span>
         <button class="answer-close" onclick="closeAnswer()">&times;</button>
       </div>
       <div class="answer-question">"${escapeHtml(question)}"</div>
-      <div class="search-results">
-        ${topResults.map((s, i) => {
-          const e = s.entry;
-          const date = new Date(e.created_at);
-          const timeStr = formatTime(date);
-          const highlighted = highlightText(e.content, s.matchedWords);
-          const relevance = Math.min(100, Math.round(s.score / topResults[0].score * 100));
-          return `
-            <div class="search-result-item" onclick="scrollToEntry('${e.id}')">
-              <div class="search-result-header">
-                <span class="search-result-badge ${e.type}">${typeLabels[e.type] || e.type}</span>
-                <span class="search-result-time">${timeStr}</span>
-              </div>
-              <div class="search-result-content">${highlighted}</div>
-              <div class="search-result-score">
-                <span style="color:var(--accent);">●</span> 相关度 ${relevance}%
-              </div>
-            </div>`;
-        }).join('')}
+      <div class="search-results">${resultHtml}</div>
+      <div id="imaSearchResults" style="opacity:0.6;padding:6px 16px 2px;font-size:12px;color:var(--text-tertiary);">
+        <span class="thinking-dots" style="display:inline-flex;gap:2px;vertical-align:middle;"><span></span><span></span><span></span></span>
+        正在搜索 IMA 知识库...
       </div>
     </div>`;
+
+  // 后台异步搜索 IMA 知识库
+  searchIMAContent(question, questionKW).then(imaResults => {
+    const imaBox = document.getElementById('imaSearchResults');
+    if (!imaBox) return;
+
+    if (!imaResults || imaResults.length === 0) {
+      imaBox.innerHTML = '<span style="font-size:12px;color:var(--text-tertiary);">📚 IMA 知识库中未找到相关内容</span>';
+      setTimeout(() => { if (imaBox) imaBox.style.display = 'none'; }, 3000);
+      return;
+    }
+
+    const imaHtml = imaResults.slice(0, 3).map(r => `
+      <div class="search-result-item" style="border-left:2px solid var(--orange);cursor:default;">
+        <div class="search-result-header">
+          <span class="search-result-badge" style="background:rgba(255,159,10,0.15);color:var(--orange);">
+            ${r.source === 'knowledge' ? '📚 知识库' : '📝 笔记'}
+          </span>
+          <span class="search-result-time" style="color:var(--orange);">${escapeHtml(r.from)}</span>
+        </div>
+        <div class="search-result-content" style="font-size:13px;">${escapeHtml(r.title)}${r.highlight ? ' — ' + escapeHtml(r.highlight.substring(0, 80)) : ''}</div>
+      </div>
+    `).join('');
+
+    imaBox.style.opacity = '1';
+    imaBox.innerHTML = `
+      <div style="font-size:12px;color:var(--orange);margin-bottom:6px;font-weight:500;">📚 IMA 知识库 · 找到 ${imaResults.length} 条</div>
+      ${imaHtml}
+    `;
+  });
+}
+
+// ---- 搜索 IMA 知识库内容 ----
+async function searchIMAContent(query, keywords) {
+  const endpoints = IS_SECURE_CONTEXT
+    ? [LINK_PARSER_API]
+    : [LINK_PARSER_API, LINK_PARSER_TENCENT, LINK_PARSER_LOCAL];
+  for (const base of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch(`${base}/search-ima`, {
+        method: 'POST', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, limit: 5 }),
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        return data.results || [];
+      }
+    } catch (e) {
+      console.log(`[IMA搜索] ${base} 失败:`, e.message);
+    }
+  }
+  return [];
 }
 
 function highlightText(text, keywords) {
